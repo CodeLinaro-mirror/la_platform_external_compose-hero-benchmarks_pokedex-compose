@@ -1,24 +1,40 @@
-import com.skydoves.pokedex.compose.Configuration
+import org.jetbrains.kotlin.compose.compiler.gradle.ComposeCompilerGradlePluginExtension
 import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
-  id("skydoves.pokedex.android.application")
-  id("skydoves.pokedex.android.application.compose")
-  id("skydoves.pokedex.android.hilt")
-  id("skydoves.pokedex.spotless")
-  alias(libs.plugins.kotlin.parcelize)
-  alias(libs.plugins.baselineprofile)
+  id("dagger.hilt.android.plugin")
+  id("com.google.devtools.ksp")
+  id("org.jetbrains.kotlin.plugin.compose")
+  id("com.android.application")
+  id("org.jetbrains.kotlin.android")
+  id("androidx.baselineprofile")
 }
 
 android {
   namespace = "com.skydoves.pokedex.compose"
 
+  compileSdk = 35
+
+  defaultConfig {
+    minSdk = 21
+  }
+
+  compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+  }
+
+  lint {
+    abortOnError = false
+  }
+
   defaultConfig {
     applicationId = "com.skydoves.pokedex.compose"
-    versionCode = Configuration.versionCode
-    versionName = Configuration.versionName
+    versionCode = 1
+    versionName = "1"
     testInstrumentationRunner = "com.skydoves.pokedex.compose.AppTestRunner"
+    targetSdk = 35
   }
 
   signingConfigs {
@@ -65,6 +81,7 @@ android {
 
   buildFeatures {
     buildConfig = true
+    compose = true
   }
 
   hilt {
@@ -86,6 +103,11 @@ android {
     isIncludeAndroidResources = true
     isReturnDefaultValues = true
   }
+
+  extensions.configure<ComposeCompilerGradlePluginExtension> {
+    enableStrongSkippingMode = true
+    reportsDestination = layout.buildDirectory.dir("compose_compiler")
+  }
 }
 
 dependencies {
@@ -106,6 +128,7 @@ dependencies {
 
   // di
   implementation(libs.hilt.android)
+  implementation(libs.androidx.hilt.navigation.compose)
   ksp(libs.hilt.compiler)
   androidTestImplementation(libs.hilt.testing)
   kspAndroidTest(libs.hilt.compiler)
@@ -116,7 +139,6 @@ dependencies {
 
   // unit test
   testImplementation(libs.junit)
-  testImplementation(libs.turbine)
   testImplementation(libs.androidx.test.core)
   testImplementation(libs.mockito.core)
   testImplementation(libs.mockito.kotlin)

@@ -55,14 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.kmpalette.palette.graphics.Palette
-import com.skydoves.landscapist.ImageOptions
-import com.skydoves.landscapist.animation.crossfade.CrossfadePlugin
-import com.skydoves.landscapist.components.rememberImageComponent
-import com.skydoves.landscapist.glide.GlideImage
-import com.skydoves.landscapist.palette.PalettePlugin
-import com.skydoves.landscapist.placeholder.shimmer.Shimmer
-import com.skydoves.landscapist.placeholder.shimmer.ShimmerPlugin
+import androidx.palette.graphics.Palette
 import com.skydoves.pokedex.compose.core.data.repository.home.FakeHomeRepository
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexAppBar
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexCircularProgress
@@ -172,7 +165,7 @@ private fun SharedTransitionScope.PokemonCard(
       component = rememberImageComponent {
         +CrossfadePlugin()
         +ShimmerPlugin(
-          Shimmer.Resonate(
+          ImageComponentStubReceiver.Shimmer.Resonate(
             baseColor = Color.Transparent,
             highlightColor = Color.LightGray,
           ),
@@ -182,7 +175,7 @@ private fun SharedTransitionScope.PokemonCard(
           +PalettePlugin(
             imageModel = pokemon.imageUrl,
             useCache = true,
-            paletteLoadedListener = { palette = it },
+            paletteLoadedListener = { palette = it as Palette },
           )
         }
       },

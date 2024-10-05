@@ -22,7 +22,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import com.kmpalette.palette.graphics.Palette
+import androidx.palette.graphics.Palette
 import com.skydoves.pokedex.compose.core.designsystem.theme.PokedexTheme
 
 @Composable

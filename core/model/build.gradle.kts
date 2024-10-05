@@ -15,11 +15,10 @@
  */
 
 plugins {
-  id("skydoves.pokedex.android.library")
-  alias(libs.plugins.kotlinx.serialization)
-  alias(libs.plugins.kotlin.parcelize)
-  alias(libs.plugins.ksp)
-  id("skydoves.pokedex.spotless")
+  id("com.android.library")
+  id("org.jetbrains.kotlin.android")
+  id("org.jetbrains.kotlin.plugin.serialization")
+  id("com.google.devtools.ksp")
 }
 
 android {
@@ -27,9 +26,6 @@ android {
 }
 
 dependencies {
-  // compose stable marker
-  compileOnly(libs.compose.stable.marker)
-
   // Kotlin Serialization for Json
   implementation(libs.kotlinx.serialization.json)
 

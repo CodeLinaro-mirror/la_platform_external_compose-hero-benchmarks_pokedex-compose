@@ -15,10 +15,11 @@
  */
 
 plugins {
-  id("skydoves.pokedex.android.library")
-  id("skydoves.pokedex.android.hilt")
-  id("skydoves.pokedex.spotless")
-  alias(libs.plugins.kotlinx.serialization)
+  id("com.android.library")
+  id("org.jetbrains.kotlin.android")
+  id("dagger.hilt.android.plugin")
+  id("com.google.devtools.ksp")
+  id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -37,13 +38,15 @@ dependencies {
   implementation(libs.kotlinx.coroutines.android)
   testImplementation(libs.kotlinx.coroutines.test)
 
-  // network
-  implementation(libs.sandwich)
   implementation(platform(libs.retrofit.bom))
   implementation(platform(libs.okhttp.bom))
   implementation(libs.bundles.retrofitBundle)
   testImplementation(libs.okhttp.mockwebserver)
   testImplementation(libs.androidx.arch.core.testing)
+  
+  // di
+  implementation(libs.hilt.android)
+  ksp(libs.hilt.compiler)
 
   // json parsing
   implementation(libs.kotlinx.serialization.json)

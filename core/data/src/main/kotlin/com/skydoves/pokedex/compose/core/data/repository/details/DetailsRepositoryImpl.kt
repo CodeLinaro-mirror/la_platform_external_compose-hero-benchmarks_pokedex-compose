@@ -21,17 +21,9 @@ import androidx.annotation.WorkerThread
 import com.skydoves.pokedex.compose.core.database.PokemonInfoDao
 import com.skydoves.pokedex.compose.core.database.entitiy.mapper.asDomain
 import com.skydoves.pokedex.compose.core.database.entitiy.mapper.asEntity
-import com.skydoves.pokedex.compose.core.model.PokemonInfo
 import com.skydoves.pokedex.compose.core.network.Dispatcher
 import com.skydoves.pokedex.compose.core.network.PokedexAppDispatchers
-import com.skydoves.pokedex.compose.core.network.model.PokemonErrorResponse
-import com.skydoves.pokedex.compose.core.network.model.mapper.ErrorResponseMapper
 import com.skydoves.pokedex.compose.core.network.service.PokedexClient
-import com.skydoves.sandwich.ApiResponse
-import com.skydoves.sandwich.map
-import com.skydoves.sandwich.onError
-import com.skydoves.sandwich.onException
-import com.skydoves.sandwich.suspendOnSuccess
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -50,24 +42,15 @@ class DetailsRepositoryImpl @Inject constructor(
     flow {
       val pokemonInfo = pokemonInfoDao.getPokemonInfo(name)
       if (pokemonInfo == null) {
-        /**
-         * fetches a [PokemonInfo] from the network and getting [ApiResponse] asynchronously.
-         * @see [suspendOnSuccess](https://github.com/skydoves/sandwich#apiresponse-extensions-for-coroutines)
-         */
         val response = pokedexClient.fetchPokemonInfo(name = name)
-        response.suspendOnSuccess {
-          pokemonInfoDao.insertPokemonInfo(data.asEntity())
-          emit(data)
-        }
-          // handles the case when the API request gets an error response.
-          // e.g., internal server error.
-          .onError {
-            /** maps the [ApiResponse.Failure.Error] to the [PokemonErrorResponse] using the mapper. */
-            map(ErrorResponseMapper) { onError("[Code: $code]: $message") }
+        response
+          .onSuccess { data ->
+            pokemonInfoDao.insertPokemonInfo(data.asEntity())
+            emit(data)
           }
-          // handles the case when the API request gets an exception response.
-          // e.g., network connection error.
-          .onException { onError(message) }
+          .onFailure { throwable ->
+            onError(throwable.message)
+          }
       } else {
         emit(pokemonInfo.asDomain())
       }

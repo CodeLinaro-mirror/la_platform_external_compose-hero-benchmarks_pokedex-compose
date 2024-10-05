@@ -15,8 +15,8 @@
  */
 
 plugins {
-  id("skydoves.pokedex.android.library")
-  id("skydoves.pokedex.spotless")
+  id("com.android.library")
+  id("org.jetbrains.kotlin.android")
 }
 
 android {

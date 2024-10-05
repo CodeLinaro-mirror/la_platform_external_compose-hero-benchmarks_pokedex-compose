@@ -19,7 +19,6 @@ package com.skydoves.pokedex.compose.core.network.di
 import com.skydoves.pokedex.compose.core.network.service.PokedexClient
 import com.skydoves.pokedex.compose.core.network.service.PokedexService
 import com.skydoves.pokedex.core.network.BuildConfig
-import com.skydoves.sandwich.retrofit.adapters.ApiResponseCallAdapterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -65,7 +64,6 @@ internal object NetworkModule {
       .client(okHttpClient)
       .baseUrl("https://pokeapi.co/api/v2/")
       .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
-      .addCallAdapterFactory(ApiResponseCallAdapterFactory.create())
       .build()
   }
 

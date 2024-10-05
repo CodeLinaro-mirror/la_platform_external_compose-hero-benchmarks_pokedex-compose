@@ -1,12 +1,20 @@
+import org.jetbrains.kotlin.compose.compiler.gradle.ComposeCompilerGradlePluginExtension
+
 plugins {
-  id("skydoves.pokedex.android.library")
-  id("skydoves.pokedex.android.library.compose")
-  id("skydoves.pokedex.android.hilt")
-  id("skydoves.pokedex.spotless")
+  id("com.android.library")
+  id("org.jetbrains.kotlin.android")
+  id("dagger.hilt.android.plugin")
+  id("com.google.devtools.ksp")
 }
 
 android {
   namespace = "com.skydoves.pokedex.compose.feature.preview"
+
+  buildFeatures.compose = true
+
+  extensions.configure<ComposeCompilerGradlePluginExtension> {
+    enableStrongSkippingMode = true
+  }
 }
 
 dependencies {
@@ -14,4 +22,8 @@ dependencies {
   implementation(projects.core.designsystem)
   implementation(projects.core.navigation)
   implementation(projects.core.model)
+  
+  // di
+  implementation(libs.hilt.android)
+  ksp(libs.hilt.compiler)
 }

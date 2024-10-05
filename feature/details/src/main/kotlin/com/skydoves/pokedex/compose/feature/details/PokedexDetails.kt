@@ -57,12 +57,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.kmpalette.palette.graphics.Palette
-import com.skydoves.landscapist.ImageOptions
-import com.skydoves.landscapist.animation.crossfade.CrossfadePlugin
-import com.skydoves.landscapist.components.rememberImageComponent
-import com.skydoves.landscapist.glide.GlideImage
-import com.skydoves.landscapist.palette.PalettePlugin
+import androidx.palette.graphics.Palette
 import com.skydoves.pokedex.compose.core.data.repository.details.FakeDetailsRepository
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexCircularProgress
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexText
@@ -188,7 +183,7 @@ private fun SharedTransitionScope.DetailsHeader(
           +PalettePlugin(
             imageModel = pokemon?.imageUrl,
             useCache = true,
-            paletteLoadedListener = { palette = it },
+            paletteLoadedListener = { palette = it as Palette },
           )
         }
       },

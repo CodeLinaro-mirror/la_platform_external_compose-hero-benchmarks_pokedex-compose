@@ -1,9 +1,8 @@
 plugins {
-  alias(libs.plugins.android.test)
-  alias(libs.plugins.kotlin.android)
-  alias(libs.plugins.compose.compiler)
-  alias(libs.plugins.baselineprofile)
-  id("skydoves.pokedex.spotless")
+  id("com.android.test")
+  id("org.jetbrains.kotlin.android")
+  id("org.jetbrains.kotlin.plugin.compose")
+  id("androidx.baselineprofile")
 }
 
 android {

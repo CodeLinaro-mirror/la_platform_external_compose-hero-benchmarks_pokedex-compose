@@ -16,14 +16,13 @@
 
 package com.skydoves.pokedex.compose.core.model
 
+import android.os.Parcel
 import android.os.Parcelable
 import androidx.compose.runtime.Immutable
-import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Immutable
-@Parcelize
 @Serializable
 data class Pokemon(
   var page: Int = 0,
@@ -41,4 +40,24 @@ data class Pokemon(
       return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/" +
         "pokemon/other/official-artwork/$index.png"
     }
+
+  constructor(parcel: Parcel) : this(
+    parcel.readInt(),
+    parcel.readString()!!,
+    parcel.readString()!!
+  )
+
+  override fun writeToParcel(parcel: Parcel, flags: Int) {
+    parcel.writeInt(page)
+    parcel.writeString(nameField)
+    parcel.writeString(url)
+  }
+
+  override fun describeContents() = 0
+
+  companion object CREATOR : Parcelable.Creator<Pokemon> {
+    override fun createFromParcel(parcel: Parcel) = Pokemon(parcel)
+
+    override fun newArray(size: Int): Array<Pokemon?> = arrayOfNulls(size)
+  }
 }

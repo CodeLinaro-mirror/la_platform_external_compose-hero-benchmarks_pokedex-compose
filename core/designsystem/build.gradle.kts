@@ -1,19 +1,20 @@
+import org.jetbrains.kotlin.compose.compiler.gradle.ComposeCompilerGradlePluginExtension
+
 plugins {
-  id("skydoves.pokedex.android.library")
-  id("skydoves.pokedex.android.library.compose")
-  id("skydoves.pokedex.spotless")
+  id("com.android.library")
+  id("org.jetbrains.kotlin.android")
 }
 
 android {
   namespace = "com.skydoves.pokedex.compose.designsystem"
+  buildFeatures.compose = true
+
+  extensions.configure<ComposeCompilerGradlePluginExtension> {
+    enableStrongSkippingMode = true
+  }
 }
 
 dependencies {
-  // image loading
-  api(libs.landscapist.glide)
-  api(libs.landscapist.animation)
-  api(libs.landscapist.placeholder)
-  api(libs.landscapist.palette)
 
   api(libs.androidx.compose.runtime)
   api(libs.androidx.compose.ui)

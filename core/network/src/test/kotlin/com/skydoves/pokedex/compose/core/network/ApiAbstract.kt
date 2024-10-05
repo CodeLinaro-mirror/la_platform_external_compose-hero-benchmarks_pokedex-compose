@@ -18,7 +18,6 @@ package com.skydoves.pokedex.compose.core.network
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.skydoves.pokedex.compose.core.test.MainCoroutinesRule
-import com.skydoves.sandwich.retrofit.adapters.ApiResponseCallAdapterFactory
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.mockwebserver.MockResponse
@@ -75,11 +74,6 @@ abstract class ApiAbstract<T> {
     return Retrofit.Builder()
       .baseUrl(mockWebServer.url("/"))
       .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
-      .addCallAdapterFactory(
-        ApiResponseCallAdapterFactory.create(
-          coroutineScope = coroutinesRule.testScope,
-        ),
-      )
       .build()
       .create(clazz)
   }

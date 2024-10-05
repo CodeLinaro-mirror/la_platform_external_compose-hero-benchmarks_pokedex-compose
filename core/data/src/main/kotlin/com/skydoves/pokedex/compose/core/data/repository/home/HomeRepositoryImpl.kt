@@ -21,14 +21,9 @@ import androidx.annotation.WorkerThread
 import com.skydoves.pokedex.compose.core.database.PokemonDao
 import com.skydoves.pokedex.compose.core.database.entitiy.mapper.asDomain
 import com.skydoves.pokedex.compose.core.database.entitiy.mapper.asEntity
-import com.skydoves.pokedex.compose.core.model.Pokemon
 import com.skydoves.pokedex.compose.core.network.Dispatcher
 import com.skydoves.pokedex.compose.core.network.PokedexAppDispatchers
 import com.skydoves.pokedex.compose.core.network.service.PokedexClient
-import com.skydoves.sandwich.ApiResponse
-import com.skydoves.sandwich.message
-import com.skydoves.sandwich.onFailure
-import com.skydoves.sandwich.suspendOnSuccess
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -52,18 +47,14 @@ class HomeRepositoryImpl @Inject constructor(
   ) = flow {
     var pokemons = pokemonDao.getPokemonList(page).asDomain()
     if (pokemons.isEmpty()) {
-      /**
-       * fetches a list of [Pokemon] from the network and getting [ApiResponse] asynchronously.
-       * @see [suspendOnSuccess](https://github.com/skydoves/sandwich#apiresponse-extensions-for-coroutines)
-       */
       val response = pokedexClient.fetchPokemonList(page = page)
-      response.suspendOnSuccess {
+      response.onSuccess { data ->
         pokemons = data.results
         pokemons.forEach { pokemon -> pokemon.page = page }
         pokemonDao.insertPokemonList(pokemons.asEntity())
         emit(pokemonDao.getAllPokemonList(page).asDomain())
-      }.onFailure { // handles the all error cases from the API request fails.
-        onError(message())
+      }.onFailure { throwable ->
+        onError(throwable.message)
       }
     } else {
       emit(pokemonDao.getAllPokemonList(page).asDomain())

@@ -17,7 +17,6 @@
 package com.skydoves.pokedex.compose.core.network
 
 import com.skydoves.pokedex.compose.core.network.service.PokedexService
-import com.skydoves.sandwich.ApiResponse
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hamcrest.CoreMatchers.`is`
@@ -41,11 +40,10 @@ class PokedexServiceTest : ApiAbstract<PokedexService>() {
   fun fetchPokemonListFromNetworkTest() = runTest {
     enqueueResponse("/PokemonResponse.json")
     val response = service.fetchPokemonList()
-    val responseBody = requireNotNull((response as ApiResponse.Success).data)
 
-    assertThat(responseBody.count, `is`(964))
-    assertThat(responseBody.results[0].name, `is`("bulbasaur"))
-    assertThat(responseBody.results[0].url, `is`("https://pokeapi.co/api/v2/pokemon/1/"))
+    assertThat(response.count, `is`(964))
+    assertThat(response.results[0].name, `is`("bulbasaur"))
+    assertThat(response.results[0].url, `is`("https://pokeapi.co/api/v2/pokemon/1/"))
   }
 
   @Throws(IOException::class)
@@ -53,12 +51,11 @@ class PokedexServiceTest : ApiAbstract<PokedexService>() {
   fun fetchPokemonInfoFromNetworkTest() = runTest {
     enqueueResponse("/Bulbasaur.json")
     val response = service.fetchPokemonInfo("bulbasaur")
-    val responseBody = requireNotNull((response as ApiResponse.Success).data)
 
-    assertThat(responseBody.id, `is`(1))
-    assertThat(responseBody.name, `is`("bulbasaur"))
-    assertThat(responseBody.height, `is`(7))
-    assertThat(responseBody.weight, `is`(69))
-    assertThat(responseBody.experience, `is`(64))
+    assertThat(response.id, `is`(1))
+    assertThat(response.name, `is`("bulbasaur"))
+    assertThat(response.height, `is`(7))
+    assertThat(response.weight, `is`(69))
+    assertThat(response.experience, `is`(64))
   }
 }

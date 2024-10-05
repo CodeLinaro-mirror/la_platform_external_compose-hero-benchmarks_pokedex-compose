@@ -15,10 +15,10 @@
  */
 
 plugins {
-  id("skydoves.pokedex.android.library")
-  id("skydoves.pokedex.android.hilt")
-  id("skydoves.pokedex.spotless")
-  alias(libs.plugins.ksp)
+  id("com.android.library")
+  id("org.jetbrains.kotlin.android")
+  id("dagger.hilt.android.plugin")
+  id("com.google.devtools.ksp")
 }
 
 android {
@@ -54,6 +54,10 @@ dependencies {
 
   // json parsing
   implementation(libs.kotlinx.serialization.json)
+  
+  // di
+  implementation(libs.hilt.android)
+  ksp(libs.hilt.compiler)
 
   // unit test
   testImplementation(libs.junit)

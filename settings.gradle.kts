@@ -4,9 +4,7 @@ include(":baselineprofile")
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 pluginManagement {
-  includeBuild("build-logic")
   repositories {
-
 
     // fetch plugins from google maven (https://maven.google.com)
     google() {

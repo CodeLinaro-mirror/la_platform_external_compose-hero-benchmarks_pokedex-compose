@@ -15,9 +15,10 @@
  */
 
 plugins {
-  id("skydoves.pokedex.android.library")
-  id("skydoves.pokedex.android.hilt")
-  id("skydoves.pokedex.spotless")
+  id("com.android.library")
+  id("org.jetbrains.kotlin.android")
+  id("dagger.hilt.android.plugin")
+  id("com.google.devtools.ksp")
 }
 
 android {
@@ -37,13 +38,13 @@ dependencies {
   // coroutines
   implementation(libs.kotlinx.coroutines.android)
   testImplementation(libs.kotlinx.coroutines.test)
-
-  // network
-  implementation(libs.sandwich)
+  
+  // di
+  implementation(libs.hilt.android)
+  ksp(libs.hilt.compiler)
 
   // unit test
   testImplementation(libs.junit)
-  testImplementation(libs.turbine)
   testImplementation(libs.androidx.test.core)
   testImplementation(libs.mockito.core)
   testImplementation(libs.mockito.kotlin)
