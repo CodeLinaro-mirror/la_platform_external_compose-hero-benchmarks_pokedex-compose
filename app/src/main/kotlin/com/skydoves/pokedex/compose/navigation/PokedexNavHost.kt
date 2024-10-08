@@ -16,20 +16,22 @@
 
 package com.skydoves.pokedex.compose.navigation
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.skydoves.pokedex.compose.core.navigation.PokedexScreen
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun PokedexNavHost(navHostController: NavHostController) {
-  SharedTransitionLayout {
-    NavHost(
-      navController = navHostController,
-      startDestination = PokedexScreen.Home,
-    ) {
-      pokedexNavigation()
+    SharedTransitionLayout {
+        NavHost(
+            navController = navHostController,
+            startDestination = PokedexScreen.Home,
+        ) {
+            pokedexNavigation(this@SharedTransitionLayout)
+        }
     }
-  }
 }

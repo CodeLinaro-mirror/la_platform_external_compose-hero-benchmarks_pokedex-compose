@@ -14,9 +14,20 @@
  * limitations under the License.
  */
 
-package com.skydoves.pokedex.compose
+package com.skydoves.pokedex.compose.core.database.entitiy
 
-import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import com.skydoves.pokedex.compose.core.model.PokemonInfo
 
-@HiltAndroidApp class PokedexApp : Application()
+@Entity
+data class PokemonInfoEntity(
+    @PrimaryKey val id: Int,
+    val name: String,
+    val height: Int,
+    val weight: Int,
+    val experience: Int,
+    val types: List<PokemonInfo.TypeResponse>,
+    val exp: Int,
+    val stats: List<PokemonInfo.StatsResponse>,
+)

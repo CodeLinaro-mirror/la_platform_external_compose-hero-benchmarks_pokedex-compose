@@ -14,23 +14,28 @@
  * limitations under the License.
  */
 
-package com.skydoves.pokedex.compose.ui
+package com.skydoves.pokedex.compose.core.designsystem.component
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.navigation.compose.rememberNavController
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import com.skydoves.pokedex.compose.core.designsystem.theme.PokedexTheme
-import com.skydoves.pokedex.compose.core.navigation.AppComposeNavigator
-import com.skydoves.pokedex.compose.core.navigation.PokedexScreen
-import com.skydoves.pokedex.compose.navigation.PokedexNavHost
 
 @Composable
-fun PokedexMain(composeNavigator: AppComposeNavigator<PokedexScreen>) {
-    PokedexTheme {
-        val navHostController = rememberNavController()
+fun BoxScope.PokedexCircularProgress() {
+    CircularProgressIndicator(
+        modifier = Modifier.align(Alignment.Center),
+        color = PokedexTheme.colors.primary,
+    )
+}
 
-        LaunchedEffect(Unit) { composeNavigator.handleNavigationCommands(navHostController) }
-
-        PokedexNavHost(navHostController = navHostController)
-    }
+@Preview
+@Composable
+private fun PokedexCircularProgressPreview() {
+    PokedexTheme { Box(modifier = Modifier.fillMaxSize()) { PokedexCircularProgress() } }
 }

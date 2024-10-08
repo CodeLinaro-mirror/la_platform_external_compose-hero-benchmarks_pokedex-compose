@@ -14,9 +14,18 @@
  * limitations under the License.
  */
 
-package com.skydoves.pokedex.compose
+package com.skydoves.pokedex.compose.core.viewmodel
 
-import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
-
-@HiltAndroidApp class PokedexApp : Application()
+@Target(
+    AnnotationTarget.CLASS,
+    AnnotationTarget.PROPERTY,
+    AnnotationTarget.CONSTRUCTOR,
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.TYPEALIAS,
+)
+@Retention(AnnotationRetention.BINARY)
+@RequiresOptIn(
+    message = "This is API has been restricted. Do not depend on this API for working properly",
+    level = RequiresOptIn.Level.ERROR,
+)
+annotation class RestrictedApi

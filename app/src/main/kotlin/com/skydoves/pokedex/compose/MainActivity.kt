@@ -31,19 +31,18 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-  @Inject
-  internal lateinit var composeNavigator: AppComposeNavigator<PokedexScreen>
+    @Inject internal lateinit var composeNavigator: AppComposeNavigator<PokedexScreen>
 
-  override fun onCreate(savedInstanceState: Bundle?) {
-    enableEdgeToEdge()
-    super.onCreate(savedInstanceState)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
 
-    setContent {
-      CompositionLocalProvider(
-        LocalComposeNavigator provides composeNavigator,
-      ) {
-        PokedexMain(composeNavigator = composeNavigator)
-      }
+        setContent {
+            CompositionLocalProvider(
+                LocalComposeNavigator provides composeNavigator,
+            ) {
+                PokedexMain(composeNavigator = composeNavigator)
+            }
+        }
     }
-  }
 }

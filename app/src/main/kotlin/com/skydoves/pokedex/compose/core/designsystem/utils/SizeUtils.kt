@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package com.skydoves.pokedex.compose
+package com.skydoves.pokedex.compose.core.designsystem.utils
 
-import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 
-@HiltAndroidApp class PokedexApp : Application()
+@Composable fun Int.pxToDp(): Dp = with(LocalDensity.current) { this@pxToDp.toDp() }

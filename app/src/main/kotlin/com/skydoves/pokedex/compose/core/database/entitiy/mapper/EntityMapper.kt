@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-package com.skydoves.pokedex.compose
+package com.skydoves.pokedex.compose.core.database.entitiy.mapper
 
-import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
+interface EntityMapper<Domain, Entity> {
 
-@HiltAndroidApp class PokedexApp : Application()
+    fun asEntity(domain: Domain): Entity
+
+    fun asDomain(entity: Entity): Domain
+}

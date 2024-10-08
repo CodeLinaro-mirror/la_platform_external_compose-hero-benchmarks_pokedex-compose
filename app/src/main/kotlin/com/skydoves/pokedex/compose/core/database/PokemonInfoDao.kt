@@ -14,9 +14,20 @@
  * limitations under the License.
  */
 
-package com.skydoves.pokedex.compose
+package com.skydoves.pokedex.compose.core.database
 
-import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import com.skydoves.pokedex.compose.core.database.entitiy.PokemonInfoEntity
 
-@HiltAndroidApp class PokedexApp : Application()
+@Dao
+interface PokemonInfoDao {
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPokemonInfo(pokemonInfo: PokemonInfoEntity)
+
+    @Query("SELECT * FROM PokemonInfoEntity WHERE name = :name_")
+    suspend fun getPokemonInfo(name_: String): PokemonInfoEntity?
+}

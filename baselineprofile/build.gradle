@@ -1,0 +1,29 @@
+plugins {
+  id("AndroidXPlugin")
+  id("AndroidXComposePlugin")
+  id("com.android.test")
+  id("org.jetbrains.kotlin.android")
+  id("androidx.baselineprofile")
+}
+
+android {
+  namespace = "com.skydoves.pokedex.compose.baselineprofile"
+  compileSdk = 35
+
+  defaultConfig {
+    // We use compilation modes only available on 24+
+    minSdk = 24
+    targetSdk = 35
+    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+  }
+
+  targetProjectPath = ":compose-hero-benchmarks:poxedex-compose:app"
+}
+
+dependencies {
+  implementation(libs.junit)
+  implementation(libs.testExtJunit)
+  implementation(libs.espressoCore)
+  implementation(libs.testUiautomator)
+  implementation(project(":benchmark:benchmark-macro-junit4"))
+}

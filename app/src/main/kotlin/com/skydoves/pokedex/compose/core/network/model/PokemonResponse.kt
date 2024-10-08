@@ -14,9 +14,16 @@
  * limitations under the License.
  */
 
-package com.skydoves.pokedex.compose
+package com.skydoves.pokedex.compose.core.network.model
 
-import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
+import com.skydoves.pokedex.compose.core.model.Pokemon
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-@HiltAndroidApp class PokedexApp : Application()
+@Serializable
+data class PokemonResponse(
+    @SerialName(value = "count") val count: Int,
+    @SerialName(value = "next") val next: String?,
+    @SerialName(value = "previous") val previous: String?,
+    @SerialName(value = "results") val results: List<Pokemon>,
+)

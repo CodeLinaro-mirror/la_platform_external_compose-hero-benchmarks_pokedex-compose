@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
-package com.skydoves.pokedex.compose
+package com.skydoves.pokedex.compose.core.viewmodel
 
-import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
+import androidx.lifecycle.ViewModel
 
-@HiltAndroidApp class PokedexApp : Application()
+abstract class BaseViewModel : ViewModel() {
+
+    protected val key: ViewModelKey = ViewModelKey(this::class.java.name)
+
+    protected fun <T> BaseViewModel.viewModelStateFlow(value: T): ViewModelStateFlow<T> {
+        return ViewModelStateFlow(key = key, value = value)
+    }
+}

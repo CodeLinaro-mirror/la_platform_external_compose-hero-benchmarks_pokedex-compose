@@ -14,23 +14,27 @@
  * limitations under the License.
  */
 
-package com.skydoves.pokedex.compose.ui
+package com.skydoves.pokedex.compose.feature.home
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.navigation.compose.rememberNavController
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
+import androidx.palette.graphics.Palette
 import com.skydoves.pokedex.compose.core.designsystem.theme.PokedexTheme
-import com.skydoves.pokedex.compose.core.navigation.AppComposeNavigator
-import com.skydoves.pokedex.compose.core.navigation.PokedexScreen
-import com.skydoves.pokedex.compose.navigation.PokedexNavHost
 
 @Composable
-fun PokedexMain(composeNavigator: AppComposeNavigator<PokedexScreen>) {
-    PokedexTheme {
-        val navHostController = rememberNavController()
-
-        LaunchedEffect(Unit) { composeNavigator.handleNavigationCommands(navHostController) }
-
-        PokedexNavHost(navHostController = navHostController)
+internal fun Palette?.paletteBackgroundColor(): State<Color> {
+    val defaultBackground = PokedexTheme.colors.background
+    return remember(this) {
+        derivedStateOf {
+            val rgb = this?.dominantSwatch?.rgb
+            if (rgb != null) {
+                Color(rgb)
+            } else {
+                defaultBackground
+            }
+        }
     }
 }

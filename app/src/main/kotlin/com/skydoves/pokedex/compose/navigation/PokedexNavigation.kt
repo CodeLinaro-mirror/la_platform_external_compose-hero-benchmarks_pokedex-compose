@@ -16,6 +16,7 @@
 
 package com.skydoves.pokedex.compose.navigation
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -23,15 +24,18 @@ import com.skydoves.pokedex.compose.core.navigation.PokedexScreen
 import com.skydoves.pokedex.compose.feature.details.PokedexDetails
 import com.skydoves.pokedex.compose.feature.home.PokedexHome
 
-context(SharedTransitionScope)
-fun NavGraphBuilder.pokedexNavigation() {
-  composable<PokedexScreen.Home> {
-    PokedexHome(this)
-  }
+@OptIn(ExperimentalSharedTransitionApi::class)
+fun NavGraphBuilder.pokedexNavigation(sharedTransitionScope: SharedTransitionScope) {
+    composable<PokedexScreen.Home> {
+        PokedexHome(sharedTransitionScope = sharedTransitionScope, animatedVisibilityScope = this)
+    }
 
-  composable<PokedexScreen.Details>(
-    typeMap = PokedexScreen.Details.typeMap,
-  ) {
-    PokedexDetails(this)
-  }
+    composable<PokedexScreen.Details>(
+        typeMap = PokedexScreen.Details.typeMap,
+    ) {
+        PokedexDetails(
+            sharedTransitionScope = sharedTransitionScope,
+            animatedVisibilityScope = this
+        )
+    }
 }

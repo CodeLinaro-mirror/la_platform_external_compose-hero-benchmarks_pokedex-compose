@@ -14,9 +14,17 @@
  * limitations under the License.
  */
 
-package com.skydoves.pokedex.compose
+package com.skydoves.pokedex.compose.core.data.repository.home
 
-import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
+import com.skydoves.pokedex.compose.core.model.Pokemon
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
-@HiltAndroidApp class PokedexApp : Application()
+class FakeHomeRepository : HomeRepository {
+    override fun fetchPokemonList(
+        page: Int,
+        onStart: () -> Unit,
+        onComplete: () -> Unit,
+        onError: (String?) -> Unit,
+    ): Flow<List<Pokemon>> = flowOf()
+}

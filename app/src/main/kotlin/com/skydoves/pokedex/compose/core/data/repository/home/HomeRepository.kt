@@ -14,9 +14,19 @@
  * limitations under the License.
  */
 
-package com.skydoves.pokedex.compose
+package com.skydoves.pokedex.compose.core.data.repository.home
 
-import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
+import androidx.annotation.WorkerThread
+import com.skydoves.pokedex.compose.core.model.Pokemon
+import kotlinx.coroutines.flow.Flow
 
-@HiltAndroidApp class PokedexApp : Application()
+interface HomeRepository {
+
+    @WorkerThread
+    fun fetchPokemonList(
+        page: Int,
+        onStart: () -> Unit,
+        onComplete: () -> Unit,
+        onError: (String?) -> Unit,
+    ): Flow<List<Pokemon>>
+}

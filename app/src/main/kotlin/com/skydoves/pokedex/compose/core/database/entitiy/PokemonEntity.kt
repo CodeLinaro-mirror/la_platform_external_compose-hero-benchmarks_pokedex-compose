@@ -14,9 +14,14 @@
  * limitations under the License.
  */
 
-package com.skydoves.pokedex.compose
+package com.skydoves.pokedex.compose.core.database.entitiy
 
-import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-@HiltAndroidApp class PokedexApp : Application()
+@Entity
+data class PokemonEntity(
+    var page: Int = 0,
+    @PrimaryKey val name: String,
+    val url: String,
+)

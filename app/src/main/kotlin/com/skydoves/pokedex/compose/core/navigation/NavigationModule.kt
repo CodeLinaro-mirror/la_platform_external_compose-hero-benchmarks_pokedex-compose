@@ -14,9 +14,21 @@
  * limitations under the License.
  */
 
-package com.skydoves.pokedex.compose
+package com.skydoves.pokedex.compose.core.navigation
 
-import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
+import dagger.Binds
+import dagger.Module
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
-@HiltAndroidApp class PokedexApp : Application()
+@Module
+@InstallIn(SingletonComponent::class)
+internal interface NavigationModule {
+
+    @Binds
+    @Singleton
+    fun provideComposeNavigator(
+        pokedexComposeNavigator: PokedexComposeNavigator,
+    ): AppComposeNavigator<PokedexScreen>
+}

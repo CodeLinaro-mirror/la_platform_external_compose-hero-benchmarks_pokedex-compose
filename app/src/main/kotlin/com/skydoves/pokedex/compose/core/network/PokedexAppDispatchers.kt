@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
-package com.skydoves.pokedex.compose
+package com.skydoves.pokedex.compose.core.network
 
-import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Qualifier
+import kotlin.annotation.AnnotationRetention.RUNTIME
 
-@HiltAndroidApp class PokedexApp : Application()
+@Qualifier
+@Retention(RUNTIME)
+annotation class Dispatcher(@Suppress("Unused") val pokedexAppDispatchers: PokedexAppDispatchers)
+
+enum class PokedexAppDispatchers {
+    IO,
+}
