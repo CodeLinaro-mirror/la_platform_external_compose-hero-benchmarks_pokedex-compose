@@ -1,0 +1,17 @@
+name: "pokedex-compose"
+description:
+    "🗡️ Pokedex Compose demonstrates modern Android development with Jetpack "
+    "Compose, Hilt, Coroutines, Flow, Jetpack (Room, ViewModel), and Material "
+    "Design based on MVVM architecture."
+
+third_party {
+  identifier {
+    type: "Git"
+    value: "https://github.com/skydoves/Pokedex-Compose"
+    primary_source: true
+    version: "b34cbe3ebb8f6cb71088b3a09a3f1d8d1c116304"
+  }
+  version: "b34cbe3ebb8f6cb71088b3a09a3f1d8d1c116304"
+  last_upgrade_date { year: 2024 month: 10 day: 1 }
+  license_type: NOTICE
+}
