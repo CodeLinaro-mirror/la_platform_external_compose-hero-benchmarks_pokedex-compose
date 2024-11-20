@@ -35,11 +35,6 @@ package com.skydoves.pokedex.compose.core.network.di
 import com.skydoves.pokedex.compose.BuildConfig
 import com.skydoves.pokedex.compose.core.network.service.PokedexClient
 import com.skydoves.pokedex.compose.core.network.service.PokedexService
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -47,47 +42,30 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 
-@Module
-@InstallIn(SingletonComponent::class)
-internal object NetworkModule {
-
-    @Singleton @Provides fun provideJson(): Json = Json { ignoreUnknownKeys = true }
-
-    @Provides
-    @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
-        return OkHttpClient.Builder()
+class NetworkModule(
+    private val json: Json
+) {
+    val okHttpClient: OkHttpClient by lazy {
+        OkHttpClient.Builder()
             .apply {
                 if (BuildConfig.DEBUG) {
                     this.addNetworkInterceptor(
-                        HttpLoggingInterceptor().apply {
-                            level = HttpLoggingInterceptor.Level.BODY
-                        },
+                        HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
                     )
                 }
             }
             .build()
     }
 
-    @Provides
-    @Singleton
-    fun provideRetrofit(json: Json, okHttpClient: OkHttpClient): Retrofit {
-        return Retrofit.Builder()
+    val retrofit: Retrofit by lazy {
+        Retrofit.Builder()
             .client(okHttpClient)
             .baseUrl("https://pokeapi.co/api/v2/")
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
     }
 
-    @Provides
-    @Singleton
-    fun providePokedexService(retrofit: Retrofit): PokedexService {
-        return retrofit.create(PokedexService::class.java)
-    }
+    val pokedexService: PokedexService by lazy { retrofit.create(PokedexService::class.java) }
 
-    @Provides
-    @Singleton
-    fun providePokedexClient(pokedexService: PokedexService): PokedexClient {
-        return PokedexClient(pokedexService)
-    }
+    val pokedexClient: PokedexClient by lazy { PokedexClient(pokedexService) }
 }

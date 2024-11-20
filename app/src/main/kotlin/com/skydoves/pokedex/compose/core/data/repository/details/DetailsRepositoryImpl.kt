@@ -23,15 +23,12 @@ import com.skydoves.pokedex.compose.core.database.entitiy.mapper.asEntity
 import com.skydoves.pokedex.compose.core.network.Dispatcher
 import com.skydoves.pokedex.compose.core.network.PokedexAppDispatchers
 import com.skydoves.pokedex.compose.core.network.service.PokedexClient
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onCompletion
 
-class DetailsRepositoryImpl
-@Inject
-constructor(
+class DetailsRepositoryImpl(
     private val pokedexClient: PokedexClient,
     private val pokemonInfoDao: PokemonInfoDao,
     @Dispatcher(PokedexAppDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,

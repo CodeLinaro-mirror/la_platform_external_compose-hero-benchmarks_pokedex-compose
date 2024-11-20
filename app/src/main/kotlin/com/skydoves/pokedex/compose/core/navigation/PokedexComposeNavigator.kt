@@ -18,9 +18,8 @@ package com.skydoves.pokedex.compose.core.navigation
 
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.navOptions
-import javax.inject.Inject
 
-class PokedexComposeNavigator @Inject constructor() : AppComposeNavigator<PokedexScreen>() {
+class PokedexComposeNavigator: AppComposeNavigator<PokedexScreen>() {
 
     override fun navigate(route: PokedexScreen, optionsBuilder: (NavOptionsBuilder.() -> Unit)?) {
         val options = optionsBuilder?.let { navOptions(it) }

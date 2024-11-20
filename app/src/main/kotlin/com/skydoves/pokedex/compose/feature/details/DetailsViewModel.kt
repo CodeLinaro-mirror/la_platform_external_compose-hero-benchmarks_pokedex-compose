@@ -24,8 +24,6 @@ import com.skydoves.pokedex.compose.core.model.Pokemon
 import com.skydoves.pokedex.compose.core.model.PokemonInfo
 import com.skydoves.pokedex.compose.core.viewmodel.BaseViewModel
 import com.skydoves.pokedex.compose.core.viewmodel.ViewModelStateFlow
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -33,10 +31,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 
-@HiltViewModel
-class DetailsViewModel
-@Inject
-constructor(
+class DetailsViewModel(
     detailsRepository: DetailsRepository,
     savedStateHandle: SavedStateHandle,
 ) : BaseViewModel() {

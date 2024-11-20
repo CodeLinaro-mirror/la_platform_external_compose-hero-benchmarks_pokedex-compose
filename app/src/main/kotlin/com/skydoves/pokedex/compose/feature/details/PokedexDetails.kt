@@ -43,7 +43,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -57,9 +56,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.palette.graphics.Palette
 import com.bumptech.glide.integration.compose.CrossFade
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
@@ -78,12 +77,13 @@ import com.skydoves.pokedex.compose.core.navigation.boundsTransform
 import com.skydoves.pokedex.compose.core.navigation.currentComposeNavigator
 import com.skydoves.pokedex.compose.core.preview.PokedexPreviewTheme
 import com.skydoves.pokedex.compose.core.preview.PreviewUtils
+import com.skydoves.pokedex.compose.core.viewmodel.LocalPokedexViewModelFactory
 
 @Composable
 fun PokedexDetails(
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    detailsViewModel: DetailsViewModel = hiltViewModel(),
+    detailsViewModel: DetailsViewModel = viewModel(factory = LocalPokedexViewModelFactory.current),
 ) {
     val uiState by detailsViewModel.uiState.collectAsStateWithLifecycle()
     val pokemon by detailsViewModel.pokemon.collectAsStateWithLifecycle()

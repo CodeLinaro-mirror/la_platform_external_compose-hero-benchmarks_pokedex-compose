@@ -16,53 +16,41 @@
 
 package com.skydoves.pokedex.compose.core.database.di
 
-import android.app.Application
+import android.content.Context
 import androidx.room.Room
 import com.skydoves.pokedex.compose.core.database.PokedexDatabase
 import com.skydoves.pokedex.compose.core.database.PokemonDao
 import com.skydoves.pokedex.compose.core.database.PokemonInfoDao
 import com.skydoves.pokedex.compose.core.database.StatsResponseConverter
 import com.skydoves.pokedex.compose.core.database.TypeResponseConverter
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
 import kotlinx.serialization.json.Json
 
-@Module
-@InstallIn(SingletonComponent::class)
-internal object DatabaseModule {
+class DatabaseModule(
+    private val context: Context,
+    private val json: Json
+) {
+    val typeResponseConverter: TypeResponseConverter by lazy {
+        TypeResponseConverter(json)
+    }
 
-    @Provides
-    @Singleton
-    fun provideAppDatabase(
-        application: Application,
-        typeResponseConverter: TypeResponseConverter,
-        statsResponseConverter: StatsResponseConverter,
-    ): PokedexDatabase {
-        return Room.databaseBuilder(application, PokedexDatabase::class.java, "Pokedex.db")
+    val statsResponseConverter: StatsResponseConverter by lazy {
+        StatsResponseConverter(json)
+    }
+
+    val pokedexDatabase: PokedexDatabase by lazy {
+        Room
+            .databaseBuilder(context, PokedexDatabase::class.java, "Pokedex.db")
             .fallbackToDestructiveMigration()
             .addTypeConverter(typeResponseConverter)
             .addTypeConverter(statsResponseConverter)
             .build()
     }
 
-    @Provides
-    @Singleton
-    fun providePokemonDao(appDatabase: PokedexDatabase): PokemonDao {
-        return appDatabase.pokemonDao()
+    val pokemonInfoDao: PokemonInfoDao by lazy {
+        pokedexDatabase.pokemonInfoDao()
     }
 
-    @Provides
-    @Singleton
-    fun providePokemonInfoDao(appDatabase: PokedexDatabase): PokemonInfoDao {
-        return appDatabase.pokemonInfoDao()
-    }
-
-    @Provides
-    @Singleton
-    fun provideTypeResponseConverter(json: Json): TypeResponseConverter {
-        return TypeResponseConverter(json)
+    val pokemonDao: PokemonDao by lazy {
+        pokedexDatabase.pokemonDao()
     }
 }
