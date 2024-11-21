@@ -79,12 +79,12 @@ fun Modifier.pokedexSharedElement(
 private val ParentClip: SharedTransitionScope.OverlayClip =
     object : SharedTransitionScope.OverlayClip {
         override fun getClipPath(
-            state: SharedTransitionScope.SharedContentState,
+            sharedContentState: SharedTransitionScope.SharedContentState,
             bounds: Rect,
             layoutDirection: LayoutDirection,
             density: Density,
         ): Path? {
-            return state.parentSharedContentState?.clipPathInOverlay
+            return sharedContentState.parentSharedContentState?.clipPathInOverlay
         }
     }
 
