@@ -63,7 +63,7 @@ fun Modifier.pokedexSharedElement(
     } else {
         with(sharedTransitionScope) {
             this@pokedexSharedElement.sharedElement(
-                state = state,
+                sharedContentState = state,
                 animatedVisibilityScope = animatedVisibilityScope,
                 boundsTransform = boundsTransform,
                 placeHolderSize = placeHolderSize,

@@ -18,11 +18,8 @@ package com.skydoves.pokedex.compose.core.network.service
 
 import com.skydoves.pokedex.compose.core.model.PokemonInfo
 import com.skydoves.pokedex.compose.core.network.model.PokemonResponse
-import javax.inject.Inject
 
-class PokedexClient
-@Inject
-constructor(
+class PokedexClient(
     private val pokedexService: PokedexService,
 ) {
 
