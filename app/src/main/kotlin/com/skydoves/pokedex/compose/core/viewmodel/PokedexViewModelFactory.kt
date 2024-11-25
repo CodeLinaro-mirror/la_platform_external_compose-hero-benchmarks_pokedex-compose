@@ -34,20 +34,17 @@ val LocalPokedexViewModelFactory = compositionLocalWithComputedDefaultOf {
     val networkModule = NetworkModule(serializationModule.json)
     val databaseModule = DatabaseModule(LocalContext.currentValue, serializationModule.json)
     val dispatchersModule = DispatchersModule()
-    val repositoryModule = RepositoryModule(
-        networkModule.pokedexClient,
-        databaseModule.pokemonDao,
-        databaseModule.pokemonInfoDao,
-        dispatchersModule.io
-    )
+    val repositoryModule =
+        RepositoryModule(
+            networkModule.pokedexClient,
+            databaseModule.pokemonDao,
+            databaseModule.pokemonInfoDao,
+            dispatchersModule.io
+        )
     PokedexViewModelFactory(repositoryModule)
 }
 
 fun PokedexViewModelFactory(repositoryModule: RepositoryModule) = viewModelFactory {
-    initializer {
-        DetailsViewModel(repositoryModule.detailsRepository, createSavedStateHandle())
-    }
-    initializer {
-        HomeViewModel(repositoryModule.homeRepository)
-    }
+    initializer { DetailsViewModel(repositoryModule.detailsRepository, createSavedStateHandle()) }
+    initializer { HomeViewModel(repositoryModule.homeRepository) }
 }

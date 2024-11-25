@@ -32,18 +32,10 @@ class RepositoryModule(
     private val ioDispatcher: CoroutineDispatcher
 ) {
     val detailsRepository: DetailsRepository by lazy {
-        DetailsRepositoryImpl(
-            pokedexClient,
-            pokemonInfoDao,
-            ioDispatcher
-        )
+        DetailsRepositoryImpl(pokedexClient, pokemonInfoDao, ioDispatcher)
     }
 
     val homeRepository: HomeRepository by lazy {
-        HomeRepositoryImpl(
-            pokedexClient,
-            pokemonDao,
-            ioDispatcher
-        )
+        HomeRepositoryImpl(pokedexClient, pokemonDao, ioDispatcher)
     }
 }
