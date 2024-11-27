@@ -65,7 +65,6 @@ data class PokdexBackground(
     }
 }
 
-val LocalBackgroundTheme: ProvidableCompositionLocal<PokdexBackground> =
-    staticCompositionLocalOf {
-        PokdexBackground()
-    }
+val LocalBackgroundTheme: ProvidableCompositionLocal<PokdexBackground> = staticCompositionLocalOf {
+    PokdexBackground()
+}
