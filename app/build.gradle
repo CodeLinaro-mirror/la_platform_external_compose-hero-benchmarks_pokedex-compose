@@ -14,8 +14,6 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        targetSdk = 35
-
         // The schemas directory contains a schema file for each version of the Room database.
         // This is required to enable Room auto migrations.
         room {
@@ -49,6 +47,7 @@ dependencies {
 
     // AndroidX
     implementation(libs.androidx.core)
+    implementation(libs.testRunner)
     implementation("androidx.navigation:navigation-compose:2.8.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
     implementation("androidx.palette:palette:1.0.0")
