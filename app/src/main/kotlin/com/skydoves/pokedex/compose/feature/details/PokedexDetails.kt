@@ -284,10 +284,12 @@ private fun PokedexDetailsPreview() {
             sharedTransitionScope = this,
             animatedVisibilityScope = animatedVisibilityScope,
             detailsViewModel =
-                DetailsViewModel(
-                    detailsRepository = FakeDetailsRepository(),
-                    savedStateHandle = SavedStateHandle(),
-                ),
+                viewModel {
+                    DetailsViewModel(
+                        detailsRepository = FakeDetailsRepository(),
+                        savedStateHandle = SavedStateHandle(),
+                    )
+                },
         )
     }
 }

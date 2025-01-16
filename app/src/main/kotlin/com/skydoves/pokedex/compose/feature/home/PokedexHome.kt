@@ -221,7 +221,8 @@ private fun PokedexHomePreview() {
                 PokedexHome(
                     animatedVisibilityScope = this,
                     sharedTransitionScope = this@SharedTransitionScope,
-                    homeViewModel = HomeViewModel(homeRepository = FakeHomeRepository()),
+                    homeViewModel =
+                        viewModel { HomeViewModel(homeRepository = FakeHomeRepository()) }
                 )
             }
         }
@@ -233,12 +234,13 @@ private fun PokedexHomePreview() {
 @Composable
 private fun HomeContentPreview() {
     PokedexPreviewTheme { scope ->
+        val homeViewModel = viewModel { HomeViewModel(homeRepository = FakeHomeRepository()) }
         HomeContent(
             animatedVisibilityScope = scope,
             sharedTransitionScope = this@PokedexPreviewTheme,
             uiState = HomeUiState.Idle,
             pokemonList = PreviewUtils.mockPokemonList().toImmutableList(),
-            fetchNextPokemonList = { HomeViewModel(homeRepository = FakeHomeRepository()) },
+            fetchNextPokemonList = { homeViewModel.fetchNextPokemonList() },
         )
     }
 }
