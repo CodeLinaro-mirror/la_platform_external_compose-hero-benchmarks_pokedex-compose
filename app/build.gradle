@@ -1,9 +1,8 @@
 plugins {
     id("AndroidXPlugin")
     id("AndroidXComposePlugin")
-    id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
-    id("com.android.application")
+    id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("androidx.baselineprofile")
     id("androidx.room")
@@ -16,7 +15,6 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.skydoves.pokedex.compose"
         targetSdk = 35
 
         // The schemas directory contains a schema file for each version of the Room database.
@@ -28,18 +26,13 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled = true
-            shrinkResources = true
+            minifyEnabled false
             proguardFiles("proguard-rules.pro")
         }
     }
 
     buildFeatures {
         buildConfig = true
-    }
-
-    hilt {
-        enableAggregatingTask = true
     }
 }
 
@@ -63,12 +56,6 @@ dependencies {
 
     // Image Loading
     implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
-
-    // Di
-    implementation(libs.hiltAndroid)
-    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-    ksp(libs.hiltCompiler)
-    implementation("androidx.navigation:navigation-compose:2.8.0-beta07")
 
     // Kotlinx
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.7")

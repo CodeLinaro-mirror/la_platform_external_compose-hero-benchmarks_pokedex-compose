@@ -16,21 +16,36 @@
 
 package com.skydoves.pokedex.compose.ui
 
+import androidx.activity.ComponentActivity
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
 import com.skydoves.pokedex.compose.core.designsystem.theme.PokedexTheme
 import com.skydoves.pokedex.compose.core.navigation.AppComposeNavigator
+import com.skydoves.pokedex.compose.core.navigation.LocalComposeNavigator
+import com.skydoves.pokedex.compose.core.navigation.PokedexComposeNavigator
 import com.skydoves.pokedex.compose.core.navigation.PokedexScreen
 import com.skydoves.pokedex.compose.navigation.PokedexNavHost
 
 @Composable
-fun PokedexMain(composeNavigator: AppComposeNavigator<PokedexScreen>) {
+fun PokedexMain(
+    composeNavigator: AppComposeNavigator<PokedexScreen> = remember { PokedexComposeNavigator() }
+) {
     PokedexTheme {
-        val navHostController = rememberNavController()
-
-        LaunchedEffect(Unit) { composeNavigator.handleNavigationCommands(navHostController) }
-
-        PokedexNavHost(navHostController = navHostController)
+        CompositionLocalProvider(LocalComposeNavigator provides composeNavigator) {
+            val context = LocalContext.current
+            DisposableEffect(context) {
+                (context as? ComponentActivity)?.enableEdgeToEdge()
+                onDispose {}
+            }
+            val navHostController = rememberNavController()
+            LaunchedEffect(Unit) { composeNavigator.handleNavigationCommands(navHostController) }
+            PokedexNavHost(navHostController = navHostController)
+        }
     }
 }

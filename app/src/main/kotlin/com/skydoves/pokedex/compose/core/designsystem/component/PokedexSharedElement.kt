@@ -63,7 +63,7 @@ fun Modifier.pokedexSharedElement(
     } else {
         with(sharedTransitionScope) {
             this@pokedexSharedElement.sharedElement(
-                state = state,
+                sharedContentState = state,
                 animatedVisibilityScope = animatedVisibilityScope,
                 boundsTransform = boundsTransform,
                 placeHolderSize = placeHolderSize,
@@ -79,12 +79,12 @@ fun Modifier.pokedexSharedElement(
 private val ParentClip: SharedTransitionScope.OverlayClip =
     object : SharedTransitionScope.OverlayClip {
         override fun getClipPath(
-            state: SharedTransitionScope.SharedContentState,
+            sharedContentState: SharedTransitionScope.SharedContentState,
             bounds: Rect,
             layoutDirection: LayoutDirection,
             density: Density,
         ): Path? {
-            return state.parentSharedContentState?.clipPathInOverlay
+            return sharedContentState.parentSharedContentState?.clipPathInOverlay
         }
     }
 

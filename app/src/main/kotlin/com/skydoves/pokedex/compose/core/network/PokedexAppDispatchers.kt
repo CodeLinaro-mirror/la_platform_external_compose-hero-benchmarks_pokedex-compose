@@ -16,10 +16,8 @@
 
 package com.skydoves.pokedex.compose.core.network
 
-import javax.inject.Qualifier
 import kotlin.annotation.AnnotationRetention.RUNTIME
 
-@Qualifier
 @Retention(RUNTIME)
 annotation class Dispatcher(@Suppress("Unused") val pokedexAppDispatchers: PokedexAppDispatchers)
 

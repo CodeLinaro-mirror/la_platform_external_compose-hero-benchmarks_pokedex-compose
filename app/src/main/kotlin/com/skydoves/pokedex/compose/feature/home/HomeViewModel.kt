@@ -22,8 +22,6 @@ import com.skydoves.pokedex.compose.core.data.repository.home.HomeRepository
 import com.skydoves.pokedex.compose.core.model.Pokemon
 import com.skydoves.pokedex.compose.core.viewmodel.BaseViewModel
 import com.skydoves.pokedex.compose.core.viewmodel.ViewModelStateFlow
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -31,12 +29,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 
-@HiltViewModel
-class HomeViewModel
-@Inject
-constructor(
-    private val homeRepository: HomeRepository,
-) : BaseViewModel() {
+class HomeViewModel(private val homeRepository: HomeRepository) : BaseViewModel() {
 
     internal val uiState: ViewModelStateFlow<HomeUiState> = viewModelStateFlow(HomeUiState.Loading)
 
