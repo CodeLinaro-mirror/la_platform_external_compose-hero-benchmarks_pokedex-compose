@@ -31,9 +31,14 @@ import com.skydoves.pokedex.compose.feature.home.HomeViewModel
 
 val LocalPokedexViewModelFactory = compositionLocalWithComputedDefaultOf {
     val serializationModule = SerializationModule()
-    val networkModule = NetworkModule(serializationModule.json)
-    val databaseModule = DatabaseModule(LocalContext.currentValue, serializationModule.json)
     val dispatchersModule = DispatchersModule()
+    val networkModule =
+        NetworkModule(
+            json = serializationModule.json,
+            networkCoroutineContext = dispatchersModule.io
+        )
+    val databaseModule =
+        DatabaseModule(context = LocalContext.currentValue, json = serializationModule.json)
     val repositoryModule =
         RepositoryModule(
             networkModule.pokedexClient,
