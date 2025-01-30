@@ -43,6 +43,7 @@ dependencies {
     implementation(project(":compose:material3:material3"))
     implementation(project(":compose:foundation:foundation"))
     implementation(project(":compose:foundation:foundation-layout"))
+    implementation(project(":compose:integration-tests:hero:hero-common:hero-common-implementation"))
     implementation("androidx.activity:activity-compose:1.9.2")
 
     // AndroidX
@@ -54,6 +55,8 @@ dependencies {
 
     // Image Loading
     implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
+    implementation("com.github.bumptech.glide:okhttp3-integration:4.16.0")
+    ksp("com.github.bumptech.glide:ksp:4.16.0")
 
     // Kotlinx
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.7")
