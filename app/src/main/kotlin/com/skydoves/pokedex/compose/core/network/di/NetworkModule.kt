@@ -32,7 +32,6 @@
 
 package com.skydoves.pokedex.compose.core.network.di
 
-import com.skydoves.pokedex.compose.BuildConfig
 import com.skydoves.pokedex.compose.core.network.service.PokedexClient
 import com.skydoves.pokedex.compose.core.network.service.PokedexService
 import com.skydoves.pokedex.compose.core.network.service.pokedexMockWebServer
@@ -81,10 +80,10 @@ class NetworkModule(private val json: Json, private val networkCoroutineContext:
         runBlocking(networkCoroutineContext) { mockServer.url("/api/v2/") }
     }
 
-    val okHttpClient: OkHttpClient by lazy {
-        OkHttpClient.Builder()
+    fun okHttpClientFactory(): OkHttpClient {
+        return OkHttpClient.Builder()
             .apply {
-                if (BuildConfig.DEBUG) {
+                if (true) {
                     this.addNetworkInterceptor(
                         HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
                     )
@@ -96,6 +95,8 @@ class NetworkModule(private val json: Json, private val networkCoroutineContext:
             )
             .build()
     }
+
+    val okHttpClient: OkHttpClient by lazy { okHttpClientFactory() }
 
     val retrofit: Retrofit by lazy {
         Retrofit.Builder()
