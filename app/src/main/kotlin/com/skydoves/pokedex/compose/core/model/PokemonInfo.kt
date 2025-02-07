@@ -109,22 +109,12 @@ fun fakePokemonInfo(id: Int, name: String): PokemonInfo {
 
 var FakePokemonStats = listOf("hp", "attack", "speed", "defense")
 
-fun fakePokemonStats(random: Random = Random): PokemonInfo.StatsResponse {
-    val stat = PokemonInfo.Stat(FakePokemonStats.random())
-    val statMax =
-        when (stat.name) {
-            "hp" -> PokemonInfo.MAX_HP
-            "attack" -> PokemonInfo.MAX_ATTACK
-            "speed" -> PokemonInfo.MAX_SPEED
-            "defense" -> PokemonInfo.MAX_DEFENSE
-            else -> 100
-        }
-    return PokemonInfo.StatsResponse(
-        baseStat = random.nextInt(until = statMax),
+fun fakePokemonStats(random: Random = Random) =
+    PokemonInfo.StatsResponse(
+        baseStat = random.nextInt(),
         effort = random.nextInt(),
-        stat = stat
+        stat = PokemonInfo.Stat(FakePokemonStats.random())
     )
-}
 
 var FakePokemonTypes =
     listOf(

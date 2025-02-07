@@ -33,19 +33,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -111,23 +108,18 @@ private fun HomeContent(
     fetchNextPokemonList: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-        val gridState = rememberLazyGridState()
-        LaunchedEffect(gridState) {
-            val paginationThreshold = pokemonList.size - PaginationBufferSize
-            snapshotFlow { gridState.firstVisibleItemIndex >= paginationThreshold }
-                .collect {
-                    if (uiState != HomeUiState.Loading) {
-                        fetchNextPokemonList()
-                    }
-                }
-        }
+        val threadHold = 8
         LazyVerticalGrid(
-            state = gridState,
             modifier = Modifier.testTag("PokedexList"),
             columns = GridCells.Fixed(2),
             contentPadding = PaddingValues(6.dp),
         ) {
-            items(items = pokemonList, key = { pokemon -> pokemon.name }) { pokemon ->
+            itemsIndexed(items = pokemonList, key = { _, pokemon -> pokemon.name }) { index, pokemon
+                ->
+                if ((index + threadHold) >= pokemonList.size && uiState != HomeUiState.Loading) {
+                    fetchNextPokemonList()
+                }
+
                 PokemonCard(
                     animatedVisibilityScope = animatedVisibilityScope,
                     sharedTransitionScope = sharedTransitionScope,
@@ -187,7 +179,12 @@ private fun PokemonCard(
             model = pokemon.imageUrl,
             contentScale = ContentScale.Inside,
             transition = CrossFade,
-            loading = placeholder(painterResource(id = R.drawable.pokemon_preview)),
+            loading =
+                placeholder(
+                    painterResource(
+                        id = R.drawable.pokemon_preview,
+                    )
+                ),
         )
 
         Text(
@@ -247,5 +244,3 @@ private fun HomeContentPreview() {
         )
     }
 }
-
-private const val PaginationBufferSize = 8
