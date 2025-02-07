@@ -44,8 +44,7 @@ val LocalPokedexViewModelFactory = compositionLocalWithComputedDefaultOf {
             networkModule.pokedexClient,
             databaseModule.pokemonDao,
             databaseModule.pokemonInfoDao,
-            dispatchersModule.io,
-            networkModule.baseUrl
+            dispatchersModule.io
         )
     PokedexViewModelFactory(repositoryModule)
 }

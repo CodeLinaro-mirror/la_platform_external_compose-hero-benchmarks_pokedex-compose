@@ -42,7 +42,8 @@ fun pokedexMockWebServer(json: Json) =
                     if (requestPath == null) return MockResponse().setResponseCode(404)
                     return when {
                         pokemonEndpointRegex.matches(requestPath) -> {
-                            val responseData = fakePokemonResponse()
+                            val mockWebServerUrl = this@apply.url("/api/v2/")
+                            val responseData = fakePokemonResponse(mockWebServerUrl)
                             MockResponse()
                                 .setResponseCode(200)
                                 .setBody(json.encodeToString(responseData))
