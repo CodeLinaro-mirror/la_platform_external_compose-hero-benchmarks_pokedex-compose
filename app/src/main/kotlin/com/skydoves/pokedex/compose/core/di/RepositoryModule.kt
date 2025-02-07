@@ -24,20 +24,18 @@ import com.skydoves.pokedex.compose.core.database.PokemonDao
 import com.skydoves.pokedex.compose.core.database.PokemonInfoDao
 import com.skydoves.pokedex.compose.core.network.service.PokedexClient
 import kotlinx.coroutines.CoroutineDispatcher
-import okhttp3.HttpUrl
 
 class RepositoryModule(
     private val pokedexClient: PokedexClient,
     private val pokemonDao: PokemonDao,
     private val pokemonInfoDao: PokemonInfoDao,
-    private val ioDispatcher: CoroutineDispatcher,
-    private val apiUrl: HttpUrl
+    private val ioDispatcher: CoroutineDispatcher
 ) {
     val detailsRepository: DetailsRepository by lazy {
         DetailsRepositoryImpl(pokedexClient, pokemonInfoDao, ioDispatcher)
     }
 
     val homeRepository: HomeRepository by lazy {
-        HomeRepositoryImpl(pokedexClient, pokemonDao, ioDispatcher, apiUrl)
+        HomeRepositoryImpl(pokedexClient, pokemonDao, ioDispatcher)
     }
 }
