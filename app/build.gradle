@@ -14,10 +14,10 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        // The schemas directory contains a schema file for each version of the Room database.
-        // This is required to enable Room auto migrations.
+        // We don't export schemas, but Room's Gradle plugin doesn't know that. We use the project
+        // directory as a placeholder.
         room {
-            schemaDirectory("$projectDir/schemas")
+            schemaDirectory("$projectDir")
         }
     }
 
