@@ -14,17 +14,12 @@ android {
     compileSdk = 35
 
     defaultConfig {
+        // Propagate the proguard rules to be used by the including app module
+        consumerProguardFiles("proguard-rules.pro")
         // We don't export schemas, but Room's Gradle plugin doesn't know that. We use the project
         // directory as a placeholder.
         room {
             schemaDirectory("$projectDir")
-        }
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles("proguard-rules.pro")
         }
     }
 
