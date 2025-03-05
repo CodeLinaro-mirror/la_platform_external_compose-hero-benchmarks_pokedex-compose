@@ -26,6 +26,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
+import coil3.ImageLoader
+import coil3.compose.setSingletonImageLoaderFactory
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import com.skydoves.pokedex.compose.core.PokedexFeatureFlags
 import com.skydoves.pokedex.compose.core.designsystem.theme.PokedexTheme
 import com.skydoves.pokedex.compose.core.navigation.AppComposeNavigator
 import com.skydoves.pokedex.compose.core.navigation.LocalComposeNavigator
@@ -48,9 +52,27 @@ fun PokedexMain(
                 Trace.endSection()
                 onDispose { ModuleLocator.detach() }
             }
+            if (PokedexFeatureFlags.UseCoil) {
+                ConfigureCoil()
+            }
             val navHostController = rememberNavController()
             LaunchedEffect(Unit) { composeNavigator.handleNavigationCommands(navHostController) }
             PokedexNavHost(navHostController = navHostController)
         }
+    }
+}
+
+@Composable
+private fun ConfigureCoil() {
+    setSingletonImageLoaderFactory { context ->
+        ImageLoader.Builder(context)
+            .components {
+                add(
+                    OkHttpNetworkFetcherFactory(
+                        callFactory = ModuleLocator.networkModule.okHttpClient.newBuilder().build()
+                    )
+                )
+            }
+            .build()
     }
 }

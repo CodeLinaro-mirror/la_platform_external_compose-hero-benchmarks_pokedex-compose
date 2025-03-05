@@ -22,6 +22,7 @@ import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -47,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -60,11 +62,15 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.palette.graphics.Palette
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.bumptech.glide.integration.compose.CrossFade
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.placeholder
 import com.skydoves.pokedex.compose.R
+import com.skydoves.pokedex.compose.core.PokedexFeatureFlags
 import com.skydoves.pokedex.compose.core.data.repository.details.FakeDetailsRepository
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexCircularProgress
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexText
@@ -110,7 +116,6 @@ fun PokedexDetails(
     }
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 private fun DetailsHeader(
     sharedTransitionScope: SharedTransitionScope,
@@ -166,7 +171,8 @@ private fun DetailsHeader(
             fontSize = 18.sp,
         )
 
-        GlideImage(
+        PokemonHeaderImage(
+            pokemon,
             modifier =
                 Modifier.align(Alignment.BottomCenter)
                     .padding(bottom = 20.dp)
@@ -180,12 +186,7 @@ private fun DetailsHeader(
                             ),
                         animatedVisibilityScope = animatedVisibilityScope,
                         boundsTransform = boundsTransform,
-                    ),
-            model = pokemon?.imageUrl,
-            contentScale = ContentScale.Inside,
-            transition = CrossFade,
-            contentDescription = pokemon?.name,
-            loading = placeholder(painterResource(id = R.drawable.pokemon_preview)),
+                    )
         )
     }
 
@@ -210,6 +211,33 @@ private fun DetailsHeader(
         textAlign = TextAlign.Center,
         fontSize = 36.sp,
     )
+}
+
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+private fun PokemonHeaderImage(pokemon: Pokemon?, modifier: Modifier) {
+    if (PokedexFeatureFlags.UseCoil) {
+        AsyncImage(
+            modifier = modifier,
+            model =
+                ImageRequest.Builder(LocalContext.current)
+                    .data(pokemon?.imageUrl)
+                    .crossfade(PokemonHeaderImageCrossfadeDurationMillis)
+                    .build(),
+            contentDescription = pokemon?.name,
+            contentScale = ContentScale.Inside,
+            placeholder = painterResource(id = R.drawable.pokemon_preview),
+        )
+    } else {
+        GlideImage(
+            modifier = modifier,
+            model = pokemon?.imageUrl,
+            contentScale = ContentScale.Inside,
+            transition = CrossFade(tween(PokemonHeaderImageCrossfadeDurationMillis)),
+            contentDescription = pokemon?.name,
+            loading = placeholder(painterResource(id = R.drawable.pokemon_preview)),
+        )
+    }
 }
 
 @Composable
@@ -311,3 +339,5 @@ private fun PokedexDetailsStatusPreview() {
         )
     }
 }
+
+private const val PokemonHeaderImageCrossfadeDurationMillis = 250
