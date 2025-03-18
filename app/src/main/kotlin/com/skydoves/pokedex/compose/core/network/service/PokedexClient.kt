@@ -19,9 +19,7 @@ package com.skydoves.pokedex.compose.core.network.service
 import com.skydoves.pokedex.compose.core.model.PokemonInfo
 import com.skydoves.pokedex.compose.core.network.model.PokemonResponse
 
-class PokedexClient(
-    private val pokedexService: PokedexService,
-) {
+class PokedexClient(private val pokedexService: PokedexService) {
 
     suspend fun fetchPokemonList(page: Int): Result<PokemonResponse> =
         kotlin.runCatching {
