@@ -46,7 +46,7 @@ class DetailsViewModel(
             .filterNotNull()
             .flatMapLatest { pokemon ->
                 detailsRepository.fetchPokemonInfo(
-                    name = pokemon.nameField.replaceFirstChar { it.lowercase() },
+                    name = pokemon.name.replaceFirstChar { it.lowercase() },
                     onComplete = { uiState.tryEmit(key, DetailsUiState.Idle) },
                     onError = { uiState.tryEmit(key, DetailsUiState.Error(it)) },
                 )

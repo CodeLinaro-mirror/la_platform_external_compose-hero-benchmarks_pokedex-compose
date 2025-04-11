@@ -16,6 +16,7 @@
 
 package com.skydoves.pokedex.compose.ui
 
+import android.os.Trace
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
@@ -25,11 +26,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
+import coil3.ImageLoader
+import coil3.compose.setSingletonImageLoaderFactory
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import com.skydoves.pokedex.compose.core.PokedexFeatureFlags
 import com.skydoves.pokedex.compose.core.designsystem.theme.PokedexTheme
 import com.skydoves.pokedex.compose.core.navigation.AppComposeNavigator
 import com.skydoves.pokedex.compose.core.navigation.LocalComposeNavigator
 import com.skydoves.pokedex.compose.core.navigation.PokedexComposeNavigator
 import com.skydoves.pokedex.compose.core.navigation.PokedexScreen
+import com.skydoves.pokedex.compose.core.network.di.ModuleLocator
 import com.skydoves.pokedex.compose.navigation.PokedexNavHost
 
 @Composable
@@ -41,11 +47,32 @@ fun PokedexMain(
             val context = LocalContext.current
             DisposableEffect(context) {
                 (context as? ComponentActivity)?.enableEdgeToEdge()
-                onDispose {}
+                Trace.beginSection("ModuleLocator.attach")
+                ModuleLocator.attach(context = { context })
+                Trace.endSection()
+                onDispose { ModuleLocator.detach() }
+            }
+            if (PokedexFeatureFlags.UseCoil) {
+                ConfigureCoil()
             }
             val navHostController = rememberNavController()
             LaunchedEffect(Unit) { composeNavigator.handleNavigationCommands(navHostController) }
             PokedexNavHost(navHostController = navHostController)
         }
+    }
+}
+
+@Composable
+private fun ConfigureCoil() {
+    setSingletonImageLoaderFactory { context ->
+        ImageLoader.Builder(context)
+            .components {
+                add(
+                    OkHttpNetworkFetcherFactory(
+                        callFactory = ModuleLocator.networkModule.okHttpClient.newBuilder().build()
+                    )
+                )
+            }
+            .build()
     }
 }
