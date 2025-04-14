@@ -21,27 +21,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.skydoves.pokedex.compose.core.database.di.DatabaseModule
 import com.skydoves.pokedex.compose.core.di.RepositoryModule
-import com.skydoves.pokedex.compose.core.network.di.DispatchersModule
-import com.skydoves.pokedex.compose.core.network.di.NetworkModule
-import com.skydoves.pokedex.compose.core.network.di.SerializationModule
+import com.skydoves.pokedex.compose.core.network.di.ModuleLocator
 import com.skydoves.pokedex.compose.feature.details.DetailsViewModel
 import com.skydoves.pokedex.compose.feature.home.HomeViewModel
 
 val LocalPokedexViewModelFactory = compositionLocalWithComputedDefaultOf {
-    val serializationModule = SerializationModule()
-    val networkModule = NetworkModule(serializationModule.json)
-    val databaseModule = DatabaseModule(LocalContext.currentValue, serializationModule.json)
-    val dispatchersModule = DispatchersModule()
-    val repositoryModule =
-        RepositoryModule(
-            networkModule.pokedexClient,
-            databaseModule.pokemonDao,
-            databaseModule.pokemonInfoDao,
-            dispatchersModule.io
-        )
-    PokedexViewModelFactory(repositoryModule)
+    ModuleLocator.attach(context = { LocalContext.currentValue })
+    PokedexViewModelFactory(ModuleLocator.repositoryModule)
 }
 
 fun PokedexViewModelFactory(repositoryModule: RepositoryModule) = viewModelFactory {
