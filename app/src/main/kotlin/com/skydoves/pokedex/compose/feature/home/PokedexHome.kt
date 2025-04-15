@@ -118,11 +118,11 @@ private fun HomeContent(
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         val gridState = rememberLazyGridState()
-        LaunchedEffect(gridState) {
+        LaunchedEffect(gridState, pokemonList) {
             val paginationThreshold = pokemonList.size - PaginationBufferSize
             snapshotFlow { gridState.firstVisibleItemIndex >= paginationThreshold }
-                .collect {
-                    if (uiState != HomeUiState.Loading) {
+                .collect { shouldFetchNewItems ->
+                    if (shouldFetchNewItems) {
                         fetchNextPokemonList()
                     }
                 }
@@ -277,5 +277,5 @@ private fun HomeContentPreview() {
     }
 }
 
-private const val PaginationBufferSize = 8
+private const val PaginationBufferSize = 14
 private const val PokemonCardImageCrossfadeDurationMillis = 250

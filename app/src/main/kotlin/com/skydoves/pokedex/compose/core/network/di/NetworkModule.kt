@@ -82,13 +82,9 @@ class NetworkModule(private val json: Json, private val networkCoroutineContext:
 
     fun okHttpClientFactory(): OkHttpClient {
         return OkHttpClient.Builder()
-            .apply {
-                if (true) {
-                    this.addNetworkInterceptor(
-                        HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
-                    )
-                }
-            }
+            .addNetworkInterceptor(
+                HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
+            )
             .sslSocketFactory(
                 sslSocketFactory = localhostCertificates.sslSocketFactory(),
                 trustManager = localhostCertificates.trustManager
