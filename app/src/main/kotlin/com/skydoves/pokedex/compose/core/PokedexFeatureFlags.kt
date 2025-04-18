@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Android Open Source Project
+ * Copyright 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-plugins {
-    //id("AndroidXPlugin")
-    //id("AndroidXComposePlugin")
+package com.skydoves.pokedex.compose.core
+
+/** Contains feature flags for the Pokedex hero benchmark target */
+object PokedexFeatureFlags {
+    /**
+     * Whether to configure and use Coil for image loading of all images, or Glide if false. Please
+     * note that Glide will always be configured.
+     */
+    var UseCoil = true
 }
