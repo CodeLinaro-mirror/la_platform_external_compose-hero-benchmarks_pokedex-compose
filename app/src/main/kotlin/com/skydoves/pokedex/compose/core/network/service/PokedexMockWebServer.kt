@@ -16,6 +16,8 @@
 
 package com.skydoves.pokedex.compose.core.network.service
 
+import android.graphics.Bitmap
+import androidx.compose.integration.hero.common.implementation.GradientBitmap
 import com.skydoves.pokedex.compose.core.model.FakeRandomizedNames
 import com.skydoves.pokedex.compose.core.model.fakePokemonInfo
 import com.skydoves.pokedex.compose.core.network.model.fakePokemonResponse
@@ -25,49 +27,64 @@ import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
-import org.intellij.lang.annotations.Language
+import okio.Buffer
 
 /**
  * A [okhttp3.mockwebserver.MockWebServer] with a [Dispatcher] that sends responses with fake data
  * for our API.
  */
 fun pokedexMockWebServer(json: Json) =
-    MockWebServer().apply {
-        val pokemonEndpointRegex = Regex(PokemonEndpointPattern)
-        val pokemonInfoEndpointRegex = Regex(PokemonInfoEndpointPattern)
-        dispatcher =
-            object : Dispatcher() {
-                override fun dispatch(request: RecordedRequest): MockResponse {
-                    val requestPath = request.path
-                    if (requestPath == null) return MockResponse().setResponseCode(404)
-                    return when {
-                        pokemonEndpointRegex.matches(requestPath) -> {
-                            val mockWebServerUrl = this@apply.url("/api/v2/")
-                            val responseData = fakePokemonResponse(mockWebServerUrl)
-                            MockResponse()
-                                .setResponseCode(200)
-                                .setBody(json.encodeToString(responseData))
-                        }
-                        pokemonInfoEndpointRegex.matches(requestPath) -> {
-                            val requestUrl = request.requestUrl
-                            if (requestUrl == null) return MockResponse().setResponseCode(404)
-                            val pokemonName = requestUrl.pathSegments.last()
-                            val fakePokemonInfo =
-                                json.encodeToString(
-                                    fakePokemonInfo(
-                                        id = FakeRandomizedNames.indexOf(pokemonName),
-                                        name = pokemonName
-                                    )
-                                )
-                            return MockResponse().setResponseCode(200).setBody(fakePokemonInfo)
-                        }
-                        else -> MockResponse().setResponseCode(404)
-                    }
+    MockWebServer().apply { dispatcher = PokedexMockDispatcher(json) }
+
+/** This [Dispatcher] provides fake responses for our API. */
+private class PokedexMockDispatcher(private val json: Json) : Dispatcher() {
+    private val pokemonEndpointRegex = Regex("/api/v2/pokemon(\\?(?<query>(.*)))")
+    private val pokemonInfoEndpointRegex = Regex("/api/v2/pokemon/(?<name>\\w*)(/?)")
+    private val pokemonImageEndpointRegex = Regex("/api/v2/pokemon/(?<name>.*)/image(/?)")
+
+    override fun dispatch(request: RecordedRequest): MockResponse {
+        val requestPath = request.path
+        if (requestPath == null) return MockResponse().setResponseCode(404)
+        val response =
+            try {
+                when {
+                    pokemonEndpointRegex.matches(requestPath) -> pokemonHandler()
+                    pokemonInfoEndpointRegex.matches(requestPath) -> pokemonInfoHandler(request)
+                    pokemonImageEndpointRegex.matches(requestPath) -> pokemonImageHandler(request)
+                    else -> MockResponse().setResponseCode(404)
                 }
+            } catch (exception: Exception) {
+                exception.printStackTrace()
+                MockResponse()
+                    .setResponseCode(500)
+                    .setBody(exception.message ?: "Unknown Error Occurred")
             }
+        return response
     }
 
-@Language("RegExp") private const val PokemonEndpointPattern = "/api/v2/pokemon(\\?(?<query>(.*)))"
+    private fun pokemonHandler(): MockResponse {
+        return MockResponse()
+            .setResponseCode(200)
+            .setBody(json.encodeToString(fakePokemonResponse()))
+    }
 
-@Language("RegExp")
-private const val PokemonInfoEndpointPattern = "/api/v2/pokemon/(?<name>\\w*)(/?)"
+    private fun pokemonInfoHandler(request: RecordedRequest): MockResponse {
+        val requestUrl = request.requestUrl
+        if (requestUrl == null) return MockResponse().setResponseCode(404)
+        val pokemonName = requestUrl.pathSegments.last()
+        val fakePokemonInfo =
+            json.encodeToString(
+                fakePokemonInfo(id = FakeRandomizedNames.indexOf(pokemonName), name = pokemonName)
+            )
+        return MockResponse().setResponseCode(200).setBody(fakePokemonInfo)
+    }
+
+    private fun pokemonImageHandler(request: RecordedRequest): MockResponse {
+        val pathSegments = request.requestUrl!!.pathSegments
+        val pokemonName = pathSegments[pathSegments.size - 2]
+        val image = GradientBitmap(width = 500, height = 500, seed = pokemonName.hashCode())
+        val buffer = Buffer()
+        image.compress(Bitmap.CompressFormat.PNG, 100, buffer.outputStream())
+        return MockResponse().setResponseCode(200).setBody(buffer)
+    }
+}
