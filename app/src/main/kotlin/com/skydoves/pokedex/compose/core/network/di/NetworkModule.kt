@@ -32,7 +32,6 @@
 
 package com.skydoves.pokedex.compose.core.network.di
 
-import com.skydoves.pokedex.compose.BuildConfig
 import com.skydoves.pokedex.compose.core.network.service.PokedexClient
 import com.skydoves.pokedex.compose.core.network.service.PokedexService
 import com.skydoves.pokedex.compose.core.network.service.pokedexMockWebServer
@@ -81,21 +80,19 @@ class NetworkModule(private val json: Json, private val networkCoroutineContext:
         runBlocking(networkCoroutineContext) { mockServer.url("/api/v2/") }
     }
 
-    val okHttpClient: OkHttpClient by lazy {
-        OkHttpClient.Builder()
-            .apply {
-                if (BuildConfig.DEBUG) {
-                    this.addNetworkInterceptor(
-                        HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
-                    )
-                }
-            }
+    fun okHttpClientFactory(): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addNetworkInterceptor(
+                HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
+            )
             .sslSocketFactory(
                 sslSocketFactory = localhostCertificates.sslSocketFactory(),
                 trustManager = localhostCertificates.trustManager
             )
             .build()
     }
+
+    val okHttpClient: OkHttpClient by lazy { okHttpClientFactory() }
 
     val retrofit: Retrofit by lazy {
         Retrofit.Builder()
