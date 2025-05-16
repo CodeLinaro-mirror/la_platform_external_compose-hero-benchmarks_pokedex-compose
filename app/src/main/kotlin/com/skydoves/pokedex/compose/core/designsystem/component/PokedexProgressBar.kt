@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import com.skydoves.pokedex.compose.core.designsystem.theme.PokedexTheme
 import com.skydoves.pokedex.compose.core.designsystem.utils.pxToDp
 
+@Suppress("ConfigurationScreenWidthHeight")
 @Composable
 fun PokedexProgressBar(
     modifier: Modifier = Modifier,
