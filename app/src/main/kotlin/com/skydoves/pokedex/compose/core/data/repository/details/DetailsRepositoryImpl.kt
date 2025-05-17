@@ -38,7 +38,7 @@ class DetailsRepositoryImpl(
     override fun fetchPokemonInfo(
         name: String,
         onComplete: () -> Unit,
-        onError: (String?) -> Unit
+        onError: (String?) -> Unit,
     ) =
         flow {
                 val pokemonInfo = pokemonInfoDao.getPokemonInfo(name)
