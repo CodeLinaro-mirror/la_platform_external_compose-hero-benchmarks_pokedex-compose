@@ -189,7 +189,7 @@ private fun PokemonCard(
                         animatedVisibilityScope = animatedVisibilityScope,
                         boundsTransform = boundsTransform,
                     ),
-            pokemon = pokemon
+            pokemon = pokemon,
         )
 
         Text(
@@ -254,7 +254,7 @@ private fun PokedexHomePreview() {
                     animatedVisibilityScope = this,
                     sharedTransitionScope = this@SharedTransitionScope,
                     homeViewModel =
-                        viewModel { HomeViewModel(homeRepository = FakeHomeRepository()) }
+                        viewModel { HomeViewModel(homeRepository = FakeHomeRepository()) },
                 )
             }
         }
