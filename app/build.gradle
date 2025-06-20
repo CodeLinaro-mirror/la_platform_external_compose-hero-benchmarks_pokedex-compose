@@ -1,3 +1,5 @@
+import androidx.build.KotlinTarget
+
 plugins {
     id("AndroidXPlugin")
     id("AndroidXComposePlugin")
@@ -21,10 +23,6 @@ android {
         room {
             schemaDirectory("$projectDir")
         }
-    }
-
-    buildFeatures {
-        buildConfig = true
     }
 }
 
@@ -62,7 +60,6 @@ dependencies {
 
     // AndroidX
     implementation(libs.androidx.core)
-    implementation(libs.testRunner)
     implementation("androidx.navigation:navigation-compose:2.8.5")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
     implementation("androidx.palette:palette:1.0.0")
@@ -90,9 +87,10 @@ dependencies {
     implementation(libs.kotlinCoroutinesAndroid)
 
     // Database
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
+    // TODO: Update to Room 2.7.0 stable once released (b/407725691)
+    implementation("androidx.room:room-runtime:2.7.0-rc03")
+    implementation("androidx.room:room-ktx:2.7.0-rc03")
+    ksp("androidx.room:room-compiler:2.7.0-rc03")
 
     // Network
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
