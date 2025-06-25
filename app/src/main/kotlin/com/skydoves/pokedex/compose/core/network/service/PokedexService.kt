@@ -24,11 +24,16 @@ import retrofit2.http.Query
 
 interface PokedexService {
 
-    @GET("pokemon")
+    @GET(PokemonEndpoint)
     suspend fun fetchPokemonList(
         @Query("limit") limit: Int = 20,
         @Query("offset") offset: Int = 0,
     ): PokemonResponse
 
-    @GET("pokemon/{name}") suspend fun fetchPokemonInfo(@Path("name") name: String): PokemonInfo
+    @GET(PokemonInfoEndpoint) suspend fun fetchPokemonInfo(@Path("name") name: String): PokemonInfo
+
+    companion object {
+        const val PokemonEndpoint = "pokemon"
+        const val PokemonInfoEndpoint = "pokemon/{name}"
+    }
 }

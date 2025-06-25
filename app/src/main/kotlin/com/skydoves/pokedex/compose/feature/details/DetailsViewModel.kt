@@ -31,10 +31,8 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 
-class DetailsViewModel(
-    detailsRepository: DetailsRepository,
-    savedStateHandle: SavedStateHandle,
-) : BaseViewModel() {
+class DetailsViewModel(detailsRepository: DetailsRepository, savedStateHandle: SavedStateHandle) :
+    BaseViewModel() {
 
     internal val uiState: ViewModelStateFlow<DetailsUiState> =
         viewModelStateFlow(DetailsUiState.Loading)
@@ -46,7 +44,7 @@ class DetailsViewModel(
             .filterNotNull()
             .flatMapLatest { pokemon ->
                 detailsRepository.fetchPokemonInfo(
-                    name = pokemon.nameField.replaceFirstChar { it.lowercase() },
+                    name = pokemon.name.replaceFirstChar { it.lowercase() },
                     onComplete = { uiState.tryEmit(key, DetailsUiState.Idle) },
                     onError = { uiState.tryEmit(key, DetailsUiState.Error(it)) },
                 )
