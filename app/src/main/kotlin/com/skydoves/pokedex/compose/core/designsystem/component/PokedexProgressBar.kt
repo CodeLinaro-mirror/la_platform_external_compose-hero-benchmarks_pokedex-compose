@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import com.skydoves.pokedex.compose.core.designsystem.theme.PokedexTheme
 import com.skydoves.pokedex.compose.core.designsystem.utils.pxToDp
 
+@Suppress("ConfigurationScreenWidthHeight")
 @Composable
 fun PokedexProgressBar(
     modifier: Modifier = Modifier,
@@ -64,7 +65,7 @@ fun PokedexProgressBar(
                 screenWidth
             } else {
                 0f
-            },
+            }
         )
     }
 
@@ -78,15 +79,12 @@ fun PokedexProgressBar(
                     color = PokedexTheme.colors.absoluteWhite,
                     shape = RoundedCornerShape(64.dp),
                 )
-                .clip(RoundedCornerShape(64.dp)),
+                .clip(RoundedCornerShape(64.dp))
     ) {
         var textWidth by remember { mutableIntStateOf(0) }
         val threshold = 16
         val isInner by
-            remember(
-                progressWidth,
-                textWidth,
-            ) {
+            remember(progressWidth, textWidth) {
                 mutableStateOf(progressWidth > (textWidth + threshold * 2))
             }
 
@@ -101,14 +99,9 @@ fun PokedexProgressBar(
         Box(
             modifier =
                 Modifier.align(Alignment.CenterStart)
-                    .width(
-                        progressWidth.toInt().pxToDp() * animation,
-                    )
+                    .width(progressWidth.toInt().pxToDp() * animation)
                     .height(18.dp)
-                    .background(
-                        color = color,
-                        shape = RoundedCornerShape(64.dp),
-                    ),
+                    .background(color = color, shape = RoundedCornerShape(64.dp))
         ) {
             if (isInner) {
                 Text(
@@ -128,9 +121,7 @@ fun PokedexProgressBar(
                 modifier =
                     Modifier.onSizeChanged { textWidth = it.width }
                         .align(Alignment.CenterStart)
-                        .padding(
-                            start = progressWidth.toInt().pxToDp() + threshold.pxToDp(),
-                        ),
+                        .padding(start = progressWidth.toInt().pxToDp() + threshold.pxToDp()),
                 text = label,
                 fontSize = 12.sp,
                 color = PokedexTheme.colors.absoluteBlack,
@@ -146,7 +137,7 @@ private fun PokedexProgressBarPreview1() {
     PokedexTheme {
         Box(
             modifier =
-                Modifier.fillMaxWidth().height(120.dp).background(PokedexTheme.colors.background),
+                Modifier.fillMaxWidth().height(120.dp).background(PokedexTheme.colors.background)
         ) {
             PokedexProgressBar(
                 modifier = Modifier.align(Alignment.Center),
@@ -165,7 +156,7 @@ private fun PokedexProgressBarPreview2() {
     PokedexTheme {
         Box(
             modifier =
-                Modifier.fillMaxWidth().height(120.dp).background(PokedexTheme.colors.background),
+                Modifier.fillMaxWidth().height(120.dp).background(PokedexTheme.colors.background)
         ) {
             PokedexProgressBar(
                 modifier = Modifier.fillMaxWidth().align(Alignment.Center),
