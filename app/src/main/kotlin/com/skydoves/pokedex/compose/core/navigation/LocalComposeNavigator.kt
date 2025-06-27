@@ -25,7 +25,7 @@ val LocalComposeNavigator: ProvidableCompositionLocal<AppComposeNavigator<Pokede
     compositionLocalOf {
         error(
             "No AppComposeNavigator provided! " +
-                "Make sure to wrap all usages of Pokedex components in PokedexTheme."
+                "Make sure to wrap all usages of Pokedex components in PokedexTheme.",
         )
     }
 

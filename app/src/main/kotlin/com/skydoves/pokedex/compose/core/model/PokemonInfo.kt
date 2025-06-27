@@ -75,9 +75,15 @@ data class PokemonInfo(
         @SerialName(value = "stat") val stat: Stat,
     )
 
-    @Serializable data class Stat(@SerialName(value = "name") val name: String)
+    @Serializable
+    data class Stat(
+        @SerialName(value = "name") val name: String,
+    )
 
-    @Serializable data class Type(@SerialName(value = "name") val name: String)
+    @Serializable
+    data class Type(
+        @SerialName(value = "name") val name: String,
+    )
 
     companion object {
         const val MAX_HP = 300
@@ -97,7 +103,7 @@ fun fakePokemonInfo(id: Int, name: String): PokemonInfo {
         weight = random.nextInt(80, 300),
         experience = random.nextInt(0, 100),
         types = listOf(FakePokemonTypeResponse(random)),
-        stats = listOf(fakePokemonStats(random)),
+        stats = listOf(fakePokemonStats(random))
     )
 }
 
@@ -116,7 +122,7 @@ fun fakePokemonStats(random: Random = Random): PokemonInfo.StatsResponse {
     return PokemonInfo.StatsResponse(
         baseStat = random.nextInt(until = statMax),
         effort = random.nextInt(),
-        stat = stat,
+        stat = stat
     )
 }
 
@@ -127,7 +133,7 @@ var FakePokemonTypes =
         "A big one",
         "An adorable one",
         "A tiny one",
-        "A software-developing one",
+        "A software-developing one"
     )
 
 fun FakePokemonTypeResponse(random: Random = Random) =

@@ -24,6 +24,10 @@ android {
             schemaDirectory("$projectDir")
         }
     }
+
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 /**
@@ -60,6 +64,7 @@ dependencies {
 
     // AndroidX
     implementation(libs.androidx.core)
+    implementation(libs.testRunner)
     implementation("androidx.navigation:navigation-compose:2.8.5")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
     implementation("androidx.palette:palette:1.0.0")
@@ -98,4 +103,9 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     implementation("com.squareup.okhttp3:okhttp-tls:4.12.0")
+}
+
+androidx {
+    //TODO(b/402389694): Target Kotlin 2.
+    kotlinTarget = KotlinTarget.KOTLIN_1_9
 }

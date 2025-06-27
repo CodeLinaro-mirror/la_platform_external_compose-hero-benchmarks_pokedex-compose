@@ -28,7 +28,10 @@ class PokedexComposeNavigator : AppComposeNavigator<PokedexScreen>() {
 
     override fun navigateAndClearBackStack(route: PokedexScreen) {
         navigationCommands.tryEmit(
-            ComposeNavigationCommand.NavigateToRoute(route, navOptions { popUpTo(0) })
+            ComposeNavigationCommand.NavigateToRoute(
+                route,
+                navOptions { popUpTo(0) },
+            ),
         )
     }
 
@@ -38,7 +41,11 @@ class PokedexComposeNavigator : AppComposeNavigator<PokedexScreen>() {
 
     override fun <R> navigateBackWithResult(key: String, result: R, route: PokedexScreen?) {
         navigationCommands.tryEmit(
-            ComposeNavigationCommand.NavigateUpWithResult(key = key, result = result, route = route)
+            ComposeNavigationCommand.NavigateUpWithResult(
+                key = key,
+                result = result,
+                route = route,
+            ),
         )
     }
 }

@@ -35,7 +35,9 @@ import kotlinx.coroutines.flow.StateFlow
 class ViewModelStateFlow<T>(private val key: ViewModelKey, value: T) : MutableStateFlow<T> {
 
     private val mutableStateFlow: MutableStateFlow<Map<ViewModelKey, T>> =
-        MutableStateFlow(mapOf(key to value))
+        MutableStateFlow(
+            mapOf(key to value),
+        )
 
     override val subscriptionCount: StateFlow<Int>
         get() = mutableStateFlow.subscriptionCount
@@ -45,7 +47,7 @@ class ViewModelStateFlow<T>(private val key: ViewModelKey, value: T) : MutableSt
         if (key != this.key) {
             throw IllegalArgumentException(
                 "Used different key to emit new value: $value!" +
-                    "Don't manipulate key value or try to emit out of ViewModels"
+                    "Don't manipulate key value or try to emit out of ViewModels",
             )
         }
 
@@ -60,7 +62,7 @@ class ViewModelStateFlow<T>(private val key: ViewModelKey, value: T) : MutableSt
         if (key != this.key) {
             throw IllegalArgumentException(
                 "Used different key to emit new value: $value!" +
-                    "Don't manipulate key value or try to emit out of ViewModels"
+                    "Don't manipulate key value or try to emit out of ViewModels",
             )
         }
 

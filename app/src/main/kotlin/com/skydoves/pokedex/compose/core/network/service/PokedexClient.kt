@@ -23,7 +23,10 @@ class PokedexClient(private val pokedexService: PokedexService) {
 
     suspend fun fetchPokemonList(page: Int): Result<PokemonResponse> =
         kotlin.runCatching {
-            pokedexService.fetchPokemonList(limit = PAGING_SIZE, offset = page * PAGING_SIZE)
+            pokedexService.fetchPokemonList(
+                limit = PAGING_SIZE,
+                offset = page * PAGING_SIZE,
+            )
         }
 
     suspend fun fetchPokemonInfo(name: String): Result<PokemonInfo> =

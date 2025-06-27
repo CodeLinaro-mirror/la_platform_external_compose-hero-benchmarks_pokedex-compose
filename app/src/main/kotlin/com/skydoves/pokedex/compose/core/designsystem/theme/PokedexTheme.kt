@@ -56,7 +56,7 @@ fun PokedexTheme(
     ) {
         Box(
             modifier =
-                Modifier.background(background.color).semantics { testTagsAsResourceId = true }
+                Modifier.background(background.color).semantics { testTagsAsResourceId = true },
         ) {
             content()
         }

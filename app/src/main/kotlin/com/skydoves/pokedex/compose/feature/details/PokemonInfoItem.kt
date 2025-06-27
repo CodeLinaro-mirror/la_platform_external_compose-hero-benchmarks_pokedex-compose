@@ -28,7 +28,10 @@ import com.skydoves.pokedex.compose.core.designsystem.component.PokedexText
 import com.skydoves.pokedex.compose.core.designsystem.theme.PokedexTheme
 
 @Composable
-internal fun PokemonInfoItem(title: String?, content: String?) {
+internal fun PokemonInfoItem(
+    title: String?,
+    content: String?,
+) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         PokedexText(
             modifier = Modifier.padding(10.dp),

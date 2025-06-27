@@ -36,7 +36,11 @@ internal fun Palette?.paletteBackgroundBrush(): State<Brush> {
                 val domainColor = Color(domain)
                 if (light != null) {
                     val lightColor = Color(light)
-                    val gradient = arrayOf(0.0f to domainColor, 1f to lightColor)
+                    val gradient =
+                        arrayOf(
+                            0.0f to domainColor,
+                            1f to lightColor,
+                        )
                     Brush.verticalGradient(colorStops = gradient)
                 } else {
                     Brush.linearGradient(colors = listOf(domainColor, domainColor))

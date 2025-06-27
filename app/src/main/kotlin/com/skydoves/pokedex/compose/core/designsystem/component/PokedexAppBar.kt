@@ -57,7 +57,10 @@ fun PokedexAppBar() {
             )
         },
         colors =
-            TopAppBarDefaults.topAppBarColors().copy(containerColor = PokedexTheme.colors.primary),
+            TopAppBarDefaults.topAppBarColors()
+                .copy(
+                    containerColor = PokedexTheme.colors.primary,
+                ),
     )
 }
 

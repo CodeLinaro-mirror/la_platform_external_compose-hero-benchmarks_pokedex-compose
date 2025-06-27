@@ -97,7 +97,7 @@ fun PokedexDetails(
 
     Column(
         modifier =
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("PokedexDetails")
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("PokedexDetails"),
     ) {
         DetailsHeader(
             sharedTransitionScope = sharedTransitionScope,
@@ -126,7 +126,12 @@ private fun DetailsHeader(
     val composeNavigator = currentComposeNavigator
     val palette by remember { mutableStateOf<Palette?>(null) }
     val shape =
-        RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp, bottomStart = 64.dp, bottomEnd = 64.dp)
+        RoundedCornerShape(
+            topStart = 0.dp,
+            topEnd = 0.dp,
+            bottomStart = 64.dp,
+            bottomEnd = 64.dp,
+        )
 
     val backgroundBrush by palette.paletteBackgroundBrush()
 
@@ -135,7 +140,7 @@ private fun DetailsHeader(
             Modifier.fillMaxWidth()
                 .height(290.dp)
                 .shadow(elevation = 9.dp, shape = shape)
-                .background(brush = backgroundBrush, shape = shape)
+                .background(brush = backgroundBrush, shape = shape),
     ) {
         Row(
             modifier = Modifier.padding(12.dp).statusBarsPadding(),
@@ -181,7 +186,7 @@ private fun DetailsHeader(
                             ),
                         animatedVisibilityScope = animatedVisibilityScope,
                         boundsTransform = boundsTransform,
-                    ),
+                    )
         )
     }
 
@@ -276,7 +281,9 @@ private fun DetailsInfo(pokemonInfo: PokemonInfo) {
 }
 
 @Composable
-private fun DetailsStatus(pokemonInfo: PokemonInfo) {
+private fun DetailsStatus(
+    pokemonInfo: PokemonInfo,
+) {
     Text(
         modifier = Modifier.fillMaxWidth().padding(top = 22.dp, bottom = 16.dp),
         text = stringResource(id = R.string.base_stats),
@@ -326,7 +333,11 @@ private fun PokedexDetailsInfoPreview() {
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun PokedexDetailsStatusPreview() {
-    PokedexPreviewTheme { DetailsStatus(pokemonInfo = PreviewUtils.mockPokemonInfo()) }
+    PokedexPreviewTheme {
+        DetailsStatus(
+            pokemonInfo = PreviewUtils.mockPokemonInfo(),
+        )
+    }
 }
 
 private const val PokemonHeaderImageCrossfadeDurationMillis = 250

@@ -23,14 +23,18 @@ object PreviewUtils {
 
     @Suppress("Unused")
     fun mockPokemon() =
-        Pokemon(page = 0, name = "bulbasaur", imageUrl = "https://pokeapi.co/api/v2/pokemon/1/")
+        Pokemon(
+            page = 0,
+            name = "bulbasaur",
+            imageUrl = "https://pokeapi.co/api/v2/pokemon/1/",
+        )
 
     fun mockPokemonList() =
         List(10) {
             Pokemon(
                 page = 0,
                 name = "bulbasaur$it",
-                imageUrl = "https://pokeapi.co/api/v2/pokemon/1/",
+                imageUrl = "https://pokeapi.co/api/v2/pokemon/1/"
             )
         }
 
@@ -51,22 +55,22 @@ object PreviewUtils {
                     PokemonInfo.StatsResponse(
                         baseStat = 20,
                         effort = 0,
-                        stat = PokemonInfo.Stat("hp"),
+                        stat = PokemonInfo.Stat("hp")
                     ),
                     PokemonInfo.StatsResponse(
                         baseStat = 40,
                         effort = 0,
-                        stat = PokemonInfo.Stat("attack"),
+                        stat = PokemonInfo.Stat("attack")
                     ),
                     PokemonInfo.StatsResponse(
                         baseStat = 60,
                         effort = 0,
-                        stat = PokemonInfo.Stat("defense"),
+                        stat = PokemonInfo.Stat("defense")
                     ),
                     PokemonInfo.StatsResponse(
                         baseStat = 80,
                         effort = 0,
-                        stat = PokemonInfo.Stat("attack"),
+                        stat = PokemonInfo.Stat("attack")
                     ),
                 ),
         )

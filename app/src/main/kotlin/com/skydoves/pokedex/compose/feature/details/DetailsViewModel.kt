@@ -31,8 +31,10 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 
-class DetailsViewModel(detailsRepository: DetailsRepository, savedStateHandle: SavedStateHandle) :
-    BaseViewModel() {
+class DetailsViewModel(
+    detailsRepository: DetailsRepository,
+    savedStateHandle: SavedStateHandle,
+) : BaseViewModel() {
 
     internal val uiState: ViewModelStateFlow<DetailsUiState> =
         viewModelStateFlow(DetailsUiState.Loading)

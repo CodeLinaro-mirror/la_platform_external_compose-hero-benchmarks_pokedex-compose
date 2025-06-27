@@ -30,10 +30,12 @@ fun NavGraphBuilder.pokedexNavigation(sharedTransitionScope: SharedTransitionSco
         PokedexHome(sharedTransitionScope = sharedTransitionScope, animatedVisibilityScope = this)
     }
 
-    composable<PokedexScreen.Details>(typeMap = PokedexScreen.Details.typeMap) {
+    composable<PokedexScreen.Details>(
+        typeMap = PokedexScreen.Details.typeMap,
+    ) {
         PokedexDetails(
             sharedTransitionScope = sharedTransitionScope,
-            animatedVisibilityScope = this,
+            animatedVisibilityScope = this
         )
     }
 }
