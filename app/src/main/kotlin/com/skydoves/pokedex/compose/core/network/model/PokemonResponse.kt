@@ -16,6 +16,7 @@
 
 package com.skydoves.pokedex.compose.core.network.model
 
+import com.skydoves.pokedex.compose.core.model.AllPokemonNames
 import com.skydoves.pokedex.compose.core.model.PokemonNetworkModel
 import com.skydoves.pokedex.compose.core.model.fakePokemonNetworkModels
 import kotlinx.serialization.SerialName
@@ -35,5 +36,6 @@ data class PokemonResponse(
  * @param pokemons The pokemons to be contained in the response, a list of generated items with fake
  *   data by default.
  */
-fun fakePokemonResponse(pokemons: List<PokemonNetworkModel> = fakePokemonNetworkModels()) =
-    PokemonResponse(count = pokemons.size, previous = null, next = null, results = pokemons)
+fun fakePokemonResponse(
+    pokemons: List<PokemonNetworkModel> = fakePokemonNetworkModels(AllPokemonNames)
+) = PokemonResponse(count = pokemons.size, previous = null, next = null, results = pokemons)
