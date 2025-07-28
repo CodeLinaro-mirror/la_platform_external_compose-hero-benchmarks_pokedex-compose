@@ -26,6 +26,12 @@ android {
     }
 }
 
+
+// Create a release build type and make sure it's the only one enabled.
+// This is needed because we benchmark the release build type only.
+android.buildTypes { release {} }
+androidComponents { beforeVariants(selector().all()) { enabled = buildType == 'release' } }
+
 /**
  * Exclusion groups for JetBrains Compose. When a dependency depends on JetBrains Compose, prebuilts
  * for all other platforms will be pulled in. We also want to ensure we're using *Jetpack* Compose
