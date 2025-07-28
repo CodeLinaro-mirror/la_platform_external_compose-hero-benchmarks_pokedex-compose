@@ -18,6 +18,8 @@ package com.skydoves.pokedex.compose.navigation
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.skydoves.pokedex.compose.core.navigation.PokedexScreen
@@ -25,15 +27,23 @@ import com.skydoves.pokedex.compose.feature.details.PokedexDetails
 import com.skydoves.pokedex.compose.feature.home.PokedexHome
 
 @OptIn(ExperimentalSharedTransitionApi::class)
-fun NavGraphBuilder.pokedexNavigation(sharedTransitionScope: SharedTransitionScope) {
-    composable<PokedexScreen.Home> {
-        PokedexHome(sharedTransitionScope = sharedTransitionScope, animatedVisibilityScope = this)
+fun NavGraphBuilder.pokedexNavigation(
+    sharedTransitionScope: SharedTransitionScope,
+    viewModelFactory: ViewModelProvider.Factory,
+) {
+    composable(PokedexScreen.Home.NAVIGATION_ROUTE) {
+        PokedexHome(
+            sharedTransitionScope = sharedTransitionScope,
+            animatedVisibilityScope = this@composable,
+            homeViewModel = viewModel(factory = viewModelFactory),
+        )
     }
 
-    composable<PokedexScreen.Details>(typeMap = PokedexScreen.Details.typeMap) {
+    composable(PokedexScreen.Details.NAVIGATION_ROUTE) { backStackEntry ->
         PokedexDetails(
             sharedTransitionScope = sharedTransitionScope,
-            animatedVisibilityScope = this,
+            animatedVisibilityScope = this@composable,
+            detailsViewModel = viewModel(factory = viewModelFactory),
         )
     }
 }
