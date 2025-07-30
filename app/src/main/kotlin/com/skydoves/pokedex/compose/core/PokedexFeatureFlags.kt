@@ -23,4 +23,11 @@ object PokedexFeatureFlags {
      * note that Glide will always be configured.
      */
     var UseCoil = true
+
+    var EnableSharedTransitionScope = true
+
+    var EnableSharedElementTransitions = true
+        set(value) {
+            field = EnableSharedTransitionScope && value
+        }
 }

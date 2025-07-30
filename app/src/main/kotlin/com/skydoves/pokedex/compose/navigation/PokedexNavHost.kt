@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.skydoves.pokedex.compose.core.PokedexFeatureFlags
 import com.skydoves.pokedex.compose.core.navigation.PokedexScreen
 import com.skydoves.pokedex.compose.core.navigation.navigationEnterTransition
 import com.skydoves.pokedex.compose.core.navigation.navigationExitTransition
@@ -32,10 +33,18 @@ import com.skydoves.pokedex.compose.core.viewmodel.pokedexViewModelFactory
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun PokedexNavHost(navHostController: NavHostController, startDestination: PokedexScreen) {
-    SharedTransitionLayout {
+    if (PokedexFeatureFlags.EnableSharedTransitionScope) {
+        SharedTransitionLayout {
+            PokedexNavigation(
+                navHostController,
+                sharedTransitionScope = this@SharedTransitionLayout,
+                startDestination = startDestination,
+            )
+        }
+    } else {
         PokedexNavigation(
             navHostController,
-            sharedTransitionScope = this@SharedTransitionLayout,
+            sharedTransitionScope = null,
             startDestination = startDestination,
         )
     }
@@ -45,7 +54,7 @@ fun PokedexNavHost(navHostController: NavHostController, startDestination: Poked
 @Composable
 private fun PokedexNavigation(
     navHostController: NavHostController,
-    sharedTransitionScope: SharedTransitionScope,
+    sharedTransitionScope: SharedTransitionScope?,
     startDestination: PokedexScreen,
 ) {
     val viewModelFactory = remember { pokedexViewModelFactory(ModuleLocator.repositoryModule) }
