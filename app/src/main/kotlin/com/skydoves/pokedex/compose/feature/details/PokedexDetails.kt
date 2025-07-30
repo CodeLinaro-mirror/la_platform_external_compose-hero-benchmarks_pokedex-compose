@@ -22,6 +22,7 @@ import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -47,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -60,11 +62,15 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.palette.graphics.Palette
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.bumptech.glide.integration.compose.CrossFade
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.placeholder
 import com.skydoves.pokedex.compose.R
+import com.skydoves.pokedex.compose.core.PokedexFeatureFlags
 import com.skydoves.pokedex.compose.core.data.repository.details.FakeDetailsRepository
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexCircularProgress
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexText
@@ -91,7 +97,7 @@ fun PokedexDetails(
 
     Column(
         modifier =
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("PokedexDetails"),
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("PokedexDetails")
     ) {
         DetailsHeader(
             sharedTransitionScope = sharedTransitionScope,
@@ -110,7 +116,6 @@ fun PokedexDetails(
     }
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 private fun DetailsHeader(
     sharedTransitionScope: SharedTransitionScope,
@@ -121,12 +126,7 @@ private fun DetailsHeader(
     val composeNavigator = currentComposeNavigator
     val palette by remember { mutableStateOf<Palette?>(null) }
     val shape =
-        RoundedCornerShape(
-            topStart = 0.dp,
-            topEnd = 0.dp,
-            bottomStart = 64.dp,
-            bottomEnd = 64.dp,
-        )
+        RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp, bottomStart = 64.dp, bottomEnd = 64.dp)
 
     val backgroundBrush by palette.paletteBackgroundBrush()
 
@@ -135,7 +135,7 @@ private fun DetailsHeader(
             Modifier.fillMaxWidth()
                 .height(290.dp)
                 .shadow(elevation = 9.dp, shape = shape)
-                .background(brush = backgroundBrush, shape = shape),
+                .background(brush = backgroundBrush, shape = shape)
     ) {
         Row(
             modifier = Modifier.padding(12.dp).statusBarsPadding(),
@@ -166,7 +166,8 @@ private fun DetailsHeader(
             fontSize = 18.sp,
         )
 
-        GlideImage(
+        PokemonHeaderImage(
+            pokemon,
             modifier =
                 Modifier.align(Alignment.BottomCenter)
                     .padding(bottom = 20.dp)
@@ -181,11 +182,6 @@ private fun DetailsHeader(
                         animatedVisibilityScope = animatedVisibilityScope,
                         boundsTransform = boundsTransform,
                     ),
-            model = pokemon?.imageUrl,
-            contentScale = ContentScale.Inside,
-            transition = CrossFade,
-            contentDescription = pokemon?.name,
-            loading = placeholder(painterResource(id = R.drawable.pokemon_preview)),
         )
     }
 
@@ -210,6 +206,33 @@ private fun DetailsHeader(
         textAlign = TextAlign.Center,
         fontSize = 36.sp,
     )
+}
+
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+private fun PokemonHeaderImage(pokemon: Pokemon?, modifier: Modifier) {
+    if (PokedexFeatureFlags.UseCoil) {
+        AsyncImage(
+            modifier = modifier,
+            model =
+                ImageRequest.Builder(LocalContext.current)
+                    .data(pokemon?.imageUrl)
+                    .crossfade(PokemonHeaderImageCrossfadeDurationMillis)
+                    .build(),
+            contentDescription = pokemon?.name,
+            contentScale = ContentScale.Inside,
+            placeholder = painterResource(id = R.drawable.pokemon_preview),
+        )
+    } else {
+        GlideImage(
+            modifier = modifier,
+            model = pokemon?.imageUrl,
+            contentScale = ContentScale.Inside,
+            transition = CrossFade(tween(PokemonHeaderImageCrossfadeDurationMillis)),
+            contentDescription = pokemon?.name,
+            loading = placeholder(painterResource(id = R.drawable.pokemon_preview)),
+        )
+    }
 }
 
 @Composable
@@ -253,9 +276,7 @@ private fun DetailsInfo(pokemonInfo: PokemonInfo) {
 }
 
 @Composable
-private fun DetailsStatus(
-    pokemonInfo: PokemonInfo,
-) {
+private fun DetailsStatus(pokemonInfo: PokemonInfo) {
     Text(
         modifier = Modifier.fillMaxWidth().padding(top = 22.dp, bottom = 16.dp),
         text = stringResource(id = R.string.base_stats),
@@ -305,9 +326,7 @@ private fun PokedexDetailsInfoPreview() {
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun PokedexDetailsStatusPreview() {
-    PokedexPreviewTheme {
-        DetailsStatus(
-            pokemonInfo = PreviewUtils.mockPokemonInfo(),
-        )
-    }
+    PokedexPreviewTheme { DetailsStatus(pokemonInfo = PreviewUtils.mockPokemonInfo()) }
 }
+
+private const val PokemonHeaderImageCrossfadeDurationMillis = 250

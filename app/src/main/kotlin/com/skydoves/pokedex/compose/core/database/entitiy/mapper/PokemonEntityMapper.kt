@@ -18,34 +18,25 @@ package com.skydoves.pokedex.compose.core.database.entitiy.mapper
 
 import com.skydoves.pokedex.compose.core.database.entitiy.PokemonEntity
 import com.skydoves.pokedex.compose.core.model.Pokemon
+import com.skydoves.pokedex.compose.core.model.PokemonNetworkModel
+import okhttp3.HttpUrl
 
-object PokemonEntityMapper : EntityMapper<List<Pokemon>, List<PokemonEntity>> {
+fun List<PokemonNetworkModel>.asDatabaseEntity(): List<PokemonEntity> = map { pokemon ->
+    PokemonEntity(name = pokemon.name)
+}
 
-    override fun asEntity(domain: List<Pokemon>): List<PokemonEntity> {
-        return domain.map { pokemon ->
-            PokemonEntity(
-                page = pokemon.page,
-                name = pokemon.name,
-                url = pokemon.url,
-            )
-        }
+fun List<PokemonEntity>.asPresentationModel(apiUrl: HttpUrl, page: Int = 0): List<Pokemon> =
+    map { entity ->
+        Pokemon(
+            name = entity.name.replaceFirstChar { it.uppercase() },
+            imageUrl =
+                apiUrl
+                    .newBuilder()
+                    .addPathSegment("pokemon")
+                    .addPathSegment(entity.name)
+                    .addPathSegment("image")
+                    .build()
+                    .toString(),
+            page = page,
+        )
     }
-
-    override fun asDomain(entity: List<PokemonEntity>): List<Pokemon> {
-        return entity.map { pokemonEntity ->
-            Pokemon(
-                page = pokemonEntity.page,
-                nameField = pokemonEntity.name,
-                url = pokemonEntity.url,
-            )
-        }
-    }
-}
-
-fun List<Pokemon>.asEntity(): List<PokemonEntity> {
-    return PokemonEntityMapper.asEntity(this)
-}
-
-fun List<PokemonEntity>?.asDomain(): List<Pokemon> {
-    return PokemonEntityMapper.asDomain(this.orEmpty())
-}

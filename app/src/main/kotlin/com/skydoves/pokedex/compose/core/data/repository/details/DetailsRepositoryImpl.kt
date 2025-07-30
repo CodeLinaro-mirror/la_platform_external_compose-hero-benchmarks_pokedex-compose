@@ -18,8 +18,8 @@ package com.skydoves.pokedex.compose.core.data.repository.details
 
 import androidx.annotation.WorkerThread
 import com.skydoves.pokedex.compose.core.database.PokemonInfoDao
-import com.skydoves.pokedex.compose.core.database.entitiy.mapper.asDomain
-import com.skydoves.pokedex.compose.core.database.entitiy.mapper.asEntity
+import com.skydoves.pokedex.compose.core.database.entitiy.mapper.asDatabaseEntity
+import com.skydoves.pokedex.compose.core.database.entitiy.mapper.asPresentationModel
 import com.skydoves.pokedex.compose.core.network.Dispatcher
 import com.skydoves.pokedex.compose.core.network.PokedexAppDispatchers
 import com.skydoves.pokedex.compose.core.network.service.PokedexClient
@@ -38,7 +38,7 @@ class DetailsRepositoryImpl(
     override fun fetchPokemonInfo(
         name: String,
         onComplete: () -> Unit,
-        onError: (String?) -> Unit
+        onError: (String?) -> Unit,
     ) =
         flow {
                 val pokemonInfo = pokemonInfoDao.getPokemonInfo(name)
@@ -46,12 +46,12 @@ class DetailsRepositoryImpl(
                     val response = pokedexClient.fetchPokemonInfo(name = name)
                     response
                         .onSuccess { data ->
-                            pokemonInfoDao.insertPokemonInfo(data.asEntity())
+                            pokemonInfoDao.insertPokemonInfo(data.asDatabaseEntity())
                             emit(data)
                         }
                         .onFailure { throwable -> onError(throwable.message) }
                 } else {
-                    emit(pokemonInfo.asDomain())
+                    emit(pokemonInfo.asPresentationModel())
                 }
             }
             .onCompletion { onComplete() }
