@@ -21,7 +21,7 @@ android {
         // We don't export schemas, but Room's Gradle plugin doesn't know that. We use the project
         // directory as a placeholder.
         room {
-            schemaDirectory("$projectDir")
+            schemaDirectory("$projectDir/room_schemas")
         }
     }
 }
