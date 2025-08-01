@@ -82,7 +82,6 @@ import com.skydoves.pokedex.compose.core.navigation.boundsTransform
 import com.skydoves.pokedex.compose.core.navigation.currentComposeNavigator
 import com.skydoves.pokedex.compose.core.preview.PokedexPreviewTheme
 import com.skydoves.pokedex.compose.core.preview.PreviewUtils
-import com.skydoves.pokedex.compose.core.viewmodel.LocalPokedexViewModelFactory
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 
@@ -90,7 +89,7 @@ import kotlinx.collections.immutable.toImmutableList
 fun PokedexHome(
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    homeViewModel: HomeViewModel = viewModel(factory = LocalPokedexViewModelFactory.current),
+    homeViewModel: HomeViewModel,
 ) {
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
     val pokemonList by homeViewModel.pokemonList.collectAsStateWithLifecycle()
