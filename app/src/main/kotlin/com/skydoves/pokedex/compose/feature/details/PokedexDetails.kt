@@ -53,6 +53,8 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -86,7 +88,7 @@ import com.skydoves.pokedex.compose.core.preview.PreviewUtils
 
 @Composable
 fun PokedexDetails(
-    sharedTransitionScope: SharedTransitionScope,
+    sharedTransitionScope: SharedTransitionScope?,
     animatedVisibilityScope: AnimatedVisibilityScope,
     detailsViewModel: DetailsViewModel,
 ) {
@@ -104,6 +106,11 @@ fun PokedexDetails(
             pokemonName = pokemonName,
             pokemonInfo = pokemonInfo,
         )
+        if (sharedTransitionScope != null) {
+            val statusText =
+                "pokedex-details-transition-active-${sharedTransitionScope.isTransitionActive}"
+            Text(statusText, Modifier.semantics { testTag = statusText })
+        }
 
         if (uiState == DetailsUiState.Idle && pokemonInfo != null) {
             DetailsInfo(pokemonInfo = pokemonInfo!!)
@@ -117,7 +124,7 @@ fun PokedexDetails(
 
 @Composable
 private fun DetailsHeader(
-    sharedTransitionScope: SharedTransitionScope,
+    sharedTransitionScope: SharedTransitionScope?,
     animatedVisibilityScope: AnimatedVisibilityScope,
     pokemonName: String?,
     pokemonInfo: PokemonInfo?,
@@ -141,7 +148,10 @@ private fun DetailsHeader(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                modifier = Modifier.padding(end = 6.dp).clickable { composeNavigator.navigateUp() },
+                modifier =
+                    Modifier.testTag("pokedexDetailsBack").padding(end = 6.dp).clickable {
+                        composeNavigator.navigateUp()
+                    },
                 painter = painterResource(id = R.drawable.ic_arrow),
                 tint = PokedexTheme.colors.absoluteWhite,
                 contentDescription = null,
@@ -171,15 +181,22 @@ private fun DetailsHeader(
                 Modifier.align(Alignment.BottomCenter)
                     .padding(bottom = 20.dp)
                     .size(190.dp)
-                    .pokedexSharedElement(
-                        sharedTransitionScope = sharedTransitionScope,
-                        isLocalInspectionMode = LocalInspectionMode.current,
-                        state =
-                            sharedTransitionScope.rememberSharedContentState(
-                                key = "image-$pokemonName"
-                            ),
-                        animatedVisibilityScope = animatedVisibilityScope,
-                        boundsTransform = boundsTransform,
+                    .then(
+                        if (
+                            sharedTransitionScope != null &&
+                                PokedexFeatureFlags.EnableSharedElementTransitions
+                        ) {
+                            Modifier.pokedexSharedElement(
+                                sharedTransitionScope = sharedTransitionScope,
+                                isLocalInspectionMode = LocalInspectionMode.current,
+                                state =
+                                    sharedTransitionScope.rememberSharedContentState(
+                                        key = "image-$pokemonName"
+                                    ),
+                                animatedVisibilityScope = animatedVisibilityScope,
+                                boundsTransform = boundsTransform,
+                            )
+                        } else Modifier
                     ),
         )
     }
@@ -188,13 +205,22 @@ private fun DetailsHeader(
         modifier =
             Modifier.padding(top = 24.dp)
                 .fillMaxWidth()
-                .pokedexSharedElement(
-                    sharedTransitionScope = sharedTransitionScope,
-                    isLocalInspectionMode = LocalInspectionMode.current,
-                    state =
-                        sharedTransitionScope.rememberSharedContentState(key = "name-$pokemonName"),
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    boundsTransform = boundsTransform,
+                .then(
+                    if (
+                        sharedTransitionScope != null &&
+                            PokedexFeatureFlags.EnableSharedElementTransitions
+                    ) {
+                        Modifier.pokedexSharedElement(
+                            sharedTransitionScope = sharedTransitionScope,
+                            isLocalInspectionMode = LocalInspectionMode.current,
+                            state =
+                                sharedTransitionScope.rememberSharedContentState(
+                                    key = "name-$pokemonName"
+                                ),
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            boundsTransform = boundsTransform,
+                        )
+                    } else Modifier
                 ),
         text = pokemonName.orEmpty(),
         previewText = "skydoves",

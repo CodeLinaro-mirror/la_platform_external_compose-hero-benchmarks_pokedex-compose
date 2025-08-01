@@ -48,11 +48,11 @@ fun PokedexMain(
             val context = LocalContext.current
             DisposableEffect(context) {
                 (context as? ComponentActivity)?.enableEdgeToEdge()
-                Trace.beginSection("ModuleLocator.attach")
-                ModuleLocator.attach(context = { context })
-                Trace.endSection()
                 onDispose { ModuleLocator.detach() }
             }
+            Trace.beginSection("ModuleLocator.attach")
+            ModuleLocator.attach(context = { context })
+            Trace.endSection()
             if (PokedexFeatureFlags.UseCoil) {
                 ConfigureCoil()
             }

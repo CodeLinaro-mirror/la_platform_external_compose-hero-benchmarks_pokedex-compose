@@ -28,7 +28,7 @@ import com.skydoves.pokedex.compose.feature.home.PokedexHome
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 fun NavGraphBuilder.pokedexNavigation(
-    sharedTransitionScope: SharedTransitionScope,
+    sharedTransitionScope: SharedTransitionScope?,
     viewModelFactory: ViewModelProvider.Factory,
 ) {
     composable(PokedexScreen.Home.NAVIGATION_ROUTE) {
