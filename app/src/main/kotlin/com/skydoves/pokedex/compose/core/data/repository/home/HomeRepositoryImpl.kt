@@ -18,8 +18,8 @@ package com.skydoves.pokedex.compose.core.data.repository.home
 
 import androidx.annotation.WorkerThread
 import com.skydoves.pokedex.compose.core.database.PokemonDao
-import com.skydoves.pokedex.compose.core.database.entitiy.mapper.asDomain
-import com.skydoves.pokedex.compose.core.database.entitiy.mapper.asEntity
+import com.skydoves.pokedex.compose.core.database.entitiy.mapper.asDatabaseEntity
+import com.skydoves.pokedex.compose.core.database.entitiy.mapper.asPresentationModel
 import com.skydoves.pokedex.compose.core.network.Dispatcher
 import com.skydoves.pokedex.compose.core.network.PokedexAppDispatchers
 import com.skydoves.pokedex.compose.core.network.service.PokedexClient
@@ -28,11 +28,13 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
+import okhttp3.HttpUrl
 
 class HomeRepositoryImpl(
     private val pokedexClient: PokedexClient,
     private val pokemonDao: PokemonDao,
     @Dispatcher(PokedexAppDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
+    private val apiUrl: HttpUrl,
 ) : HomeRepository {
 
     @WorkerThread
@@ -43,20 +45,18 @@ class HomeRepositoryImpl(
         onError: (String?) -> Unit,
     ) =
         flow {
-                var pokemons = pokemonDao.getPokemonList(page).asDomain()
-                if (pokemons.isEmpty()) {
-                    val response = pokedexClient.fetchPokemonList(page = page)
-                    response
-                        .onSuccess { data ->
-                            pokemons = data.results
-                            pokemons.forEach { pokemon -> pokemon.page = page }
-                            pokemonDao.insertPokemonList(pokemons.asEntity())
-                            emit(pokemonDao.getAllPokemonList(page).asDomain())
-                        }
-                        .onFailure { throwable -> onError(throwable.message) }
-                } else {
-                    emit(pokemonDao.getAllPokemonList(page).asDomain())
-                }
+                // Start out by fetching cached data
+                emit(pokemonDao.getPokemonList().asPresentationModel(apiUrl, page))
+                // Afterwards, we'll make a request to the API to still get new data
+                val networkPokemonResponse = pokedexClient.fetchPokemonList(page = page)
+                networkPokemonResponse
+                    .onSuccess { data ->
+                        val networkFetchedPokemons = data.results
+                        pokemonDao.insertPokemonList(networkFetchedPokemons.asDatabaseEntity())
+                        // We re-query the database to account for concurrent modifications
+                        emit(pokemonDao.getAllPokemonList().asPresentationModel(apiUrl, page))
+                    }
+                    .onFailure { throwable -> onError(throwable.message) }
             }
             .onStart { onStart() }
             .onCompletion { onComplete() }

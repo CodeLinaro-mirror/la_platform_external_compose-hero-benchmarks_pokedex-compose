@@ -17,6 +17,7 @@
 package com.skydoves.pokedex.compose.core.viewmodel
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.ExperimentalForInheritanceCoroutinesApi
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,12 +31,12 @@ import kotlinx.coroutines.flow.StateFlow
  * once Kotlin 2.0 stable version is released and the new Compose compiler is compatible with Kotlin
  * 2.0.
  */
+// TODO: Remove this class b/400932000
+@OptIn(ExperimentalForInheritanceCoroutinesApi::class)
 class ViewModelStateFlow<T>(private val key: ViewModelKey, value: T) : MutableStateFlow<T> {
 
     private val mutableStateFlow: MutableStateFlow<Map<ViewModelKey, T>> =
-        MutableStateFlow(
-            mapOf(key to value),
-        )
+        MutableStateFlow(mapOf(key to value))
 
     override val subscriptionCount: StateFlow<Int>
         get() = mutableStateFlow.subscriptionCount
@@ -45,7 +46,7 @@ class ViewModelStateFlow<T>(private val key: ViewModelKey, value: T) : MutableSt
         if (key != this.key) {
             throw IllegalArgumentException(
                 "Used different key to emit new value: $value!" +
-                    "Don't manipulate key value or try to emit out of ViewModels",
+                    "Don't manipulate key value or try to emit out of ViewModels"
             )
         }
 
@@ -60,7 +61,7 @@ class ViewModelStateFlow<T>(private val key: ViewModelKey, value: T) : MutableSt
         if (key != this.key) {
             throw IllegalArgumentException(
                 "Used different key to emit new value: $value!" +
-                    "Don't manipulate key value or try to emit out of ViewModels",
+                    "Don't manipulate key value or try to emit out of ViewModels"
             )
         }
 

@@ -89,10 +89,7 @@ private val ParentClip: SharedTransitionScope.OverlayClip =
     }
 
 private val DefaultSpring =
-    spring(
-        stiffness = Spring.StiffnessMediumLow,
-        visibilityThreshold = Rect.VisibilityThreshold,
-    )
+    spring(stiffness = Spring.StiffnessMediumLow, visibilityThreshold = Rect.VisibilityThreshold)
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 private val DefaultBoundsTransform = BoundsTransform { _, _ -> DefaultSpring }
