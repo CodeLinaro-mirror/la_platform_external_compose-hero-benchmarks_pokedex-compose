@@ -23,15 +23,15 @@ sealed interface NavigationCommand {
 }
 
 sealed interface ComposeNavigationCommand : NavigationCommand {
-    data class NavigateToRoute<T : Any>(val route: T, val options: NavOptions? = null) :
+    data class NavigateToRoute<T : PokedexScreen>(val route: T, val options: NavOptions? = null) :
         ComposeNavigationCommand
 
-    data class NavigateUpWithResult<R, T : Any>(
+    data class NavigateUpWithResult<R, T : PokedexScreen>(
         val key: String,
         val result: R,
         val route: T? = null,
     ) : ComposeNavigationCommand
 
-    data class PopUpToRoute<T : Any>(val route: T, val inclusive: Boolean) :
+    data class PopUpToRoute<T : PokedexScreen>(val route: T, val inclusive: Boolean) :
         ComposeNavigationCommand
 }
