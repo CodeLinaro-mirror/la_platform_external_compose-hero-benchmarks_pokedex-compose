@@ -339,6 +339,6 @@ val AllPokemonNames =
             "Xenonix",
             "Zephyron",
             "Ziggurat",
-            "Zincite"
+            "Zincite",
         )
     }
