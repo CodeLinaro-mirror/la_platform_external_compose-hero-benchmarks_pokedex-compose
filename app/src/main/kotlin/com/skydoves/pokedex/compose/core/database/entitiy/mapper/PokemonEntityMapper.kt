@@ -19,6 +19,7 @@ package com.skydoves.pokedex.compose.core.database.entitiy.mapper
 import com.skydoves.pokedex.compose.core.database.entitiy.PokemonEntity
 import com.skydoves.pokedex.compose.core.model.Pokemon
 import com.skydoves.pokedex.compose.core.model.PokemonNetworkModel
+import com.skydoves.pokedex.compose.core.network.di.ModuleLocator
 import okhttp3.HttpUrl
 
 fun List<PokemonNetworkModel>.asDatabaseEntity(): List<PokemonEntity> = map { pokemon ->
@@ -29,14 +30,17 @@ fun List<PokemonEntity>.asPresentationModel(apiUrl: HttpUrl, page: Int = 0): Lis
     map { entity ->
         Pokemon(
             name = entity.name.replaceFirstChar { it.uppercase() },
-            imageUrl =
-                apiUrl
-                    .newBuilder()
-                    .addPathSegment("pokemon")
-                    .addPathSegment(entity.name)
-                    .addPathSegment("image")
-                    .build()
-                    .toString(),
+            imageUrl = getPokemonImageUrlByName(name = entity.name, apiUrl = apiUrl).toString(),
             page = page,
         )
     }
+
+fun getPokemonImageUrlByName(name: String, apiUrl: HttpUrl? = null): HttpUrl {
+    val baseApiUrl = apiUrl ?: ModuleLocator.networkModule.baseUrl
+    return baseApiUrl
+        .newBuilder()
+        .addPathSegment("pokemon")
+        .addPathSegment(name)
+        .addPathSegment("image")
+        .build()
+}
