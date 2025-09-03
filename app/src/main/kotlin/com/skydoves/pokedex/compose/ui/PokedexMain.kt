@@ -40,24 +40,28 @@ import com.skydoves.pokedex.compose.navigation.PokedexNavHost
 
 @Composable
 fun PokedexMain(
-    composeNavigator: AppComposeNavigator<PokedexScreen> = remember { PokedexComposeNavigator() }
+    composeNavigator: AppComposeNavigator<PokedexScreen> = remember { PokedexComposeNavigator() },
+    startDestination: PokedexScreen,
 ) {
     PokedexTheme {
         CompositionLocalProvider(LocalComposeNavigator provides composeNavigator) {
             val context = LocalContext.current
             DisposableEffect(context) {
                 (context as? ComponentActivity)?.enableEdgeToEdge()
-                Trace.beginSection("ModuleLocator.attach")
-                ModuleLocator.attach(context = { context })
-                Trace.endSection()
                 onDispose { ModuleLocator.detach() }
             }
+            Trace.beginSection("ModuleLocator.attach")
+            ModuleLocator.attach(context = { context })
+            Trace.endSection()
             if (PokedexFeatureFlags.UseCoil) {
                 ConfigureCoil()
             }
             val navHostController = rememberNavController()
             LaunchedEffect(Unit) { composeNavigator.handleNavigationCommands(navHostController) }
-            PokedexNavHost(navHostController = navHostController)
+            PokedexNavHost(
+                navHostController = navHostController,
+                startDestination = startDestination,
+            )
         }
     }
 }
