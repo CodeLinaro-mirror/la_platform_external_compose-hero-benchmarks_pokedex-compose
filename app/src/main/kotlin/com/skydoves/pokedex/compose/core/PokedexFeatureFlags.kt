@@ -24,16 +24,10 @@ object PokedexFeatureFlags {
      */
     var UseCoil = true
 
-    /**
-     * Whether [androidx.compose.animation.SharedTransitionScope] should be used or replaced by
-     * simpler layouts instead. If false, shared element transitions will be off too.
-     */
     var EnableSharedTransitionScope = true
 
-    /**
-     * Whether to enable shared element transitions between the activities.
-     * [EnableSharedTransitionScope] must be set to true, otherwise this flag will be false.
-     */
     var EnableSharedElementTransitions = true
-        get() = EnableSharedTransitionScope && field
+        set(value) {
+            field = EnableSharedTransitionScope && value
+        }
 }
