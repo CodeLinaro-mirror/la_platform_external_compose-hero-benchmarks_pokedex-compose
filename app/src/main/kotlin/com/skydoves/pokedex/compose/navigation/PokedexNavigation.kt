@@ -16,12 +16,19 @@
 
 package com.skydoves.pokedex.compose.navigation
 
+import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.skydoves.pokedex.compose.core.designsystem.utils.TraceAsync
 import com.skydoves.pokedex.compose.core.navigation.PokedexScreen
 import com.skydoves.pokedex.compose.feature.details.PokedexDetails
 import com.skydoves.pokedex.compose.feature.home.PokedexHome
@@ -32,6 +39,10 @@ fun NavGraphBuilder.pokedexNavigation(
     viewModelFactory: ViewModelProvider.Factory,
 ) {
     composable(PokedexScreen.Home.NAVIGATION_ROUTE) {
+        TrackTransitionStatus("home")
+        if (this.transition.isRunning) {
+            TraceAsync("Pokedex Home Navigation Transition")
+        }
         PokedexHome(
             sharedTransitionScope = sharedTransitionScope,
             animatedVisibilityScope = this@composable,
@@ -40,10 +51,20 @@ fun NavGraphBuilder.pokedexNavigation(
     }
 
     composable(PokedexScreen.Details.NAVIGATION_ROUTE) { backStackEntry ->
+        TrackTransitionStatus("details")
+        if (this.transition.isRunning) {
+            TraceAsync("Pokedex Details Navigation Transition")
+        }
         PokedexDetails(
             sharedTransitionScope = sharedTransitionScope,
             animatedVisibilityScope = this@composable,
             detailsViewModel = viewModel(factory = viewModelFactory),
         )
     }
+}
+
+@Composable
+private fun AnimatedContentScope.TrackTransitionStatus(tag: String) {
+    val status = "pokedex-$tag-transition-active-${this@TrackTransitionStatus.transition.isRunning}"
+    Text(text = status, Modifier.semantics { testTag = status })
 }
