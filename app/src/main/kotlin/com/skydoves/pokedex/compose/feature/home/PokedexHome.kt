@@ -296,5 +296,5 @@ private fun HomeContentPreview() {
     }
 }
 
-private const val PaginationBufferSize = 14
+private const val PaginationBufferSize = 48
 private const val PokemonCardImageCrossfadeDurationMillis = 250
