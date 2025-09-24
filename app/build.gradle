@@ -6,7 +6,7 @@ plugins {
     id("com.google.devtools.ksp")
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-    id("androidx.room")
+    id("androidx.room") version "2.7.0"
     alias(libs.plugins.kotlinSerialization)
 }
 
@@ -95,10 +95,9 @@ dependencies {
     implementation(libs.kotlinCoroutinesAndroid)
 
     // Database
-    // TODO: Update to Room 2.7.0 stable once released (b/407725691)
-    implementation("androidx.room:room-runtime:2.7.0-rc03")
-    implementation("androidx.room:room-ktx:2.7.0-rc03")
-    ksp("androidx.room:room-compiler:2.7.0-rc03")
+    implementation("androidx.room:room-runtime:2.7.0")
+    implementation("androidx.room:room-ktx:2.7.0")
+    ksp("androidx.room:room-compiler:2.7.0")
 
     // Network
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
