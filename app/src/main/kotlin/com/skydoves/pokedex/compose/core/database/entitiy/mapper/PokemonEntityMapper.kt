@@ -20,6 +20,7 @@ import com.skydoves.pokedex.compose.core.database.entitiy.PokemonEntity
 import com.skydoves.pokedex.compose.core.model.Pokemon
 import com.skydoves.pokedex.compose.core.model.PokemonNetworkModel
 import com.skydoves.pokedex.compose.core.network.di.ModuleLocator
+import java.io.File
 import okhttp3.HttpUrl
 
 fun List<PokemonNetworkModel>.asDatabaseEntity(): List<PokemonEntity> = map { pokemon ->
@@ -44,3 +45,5 @@ fun getPokemonImageUrlByName(name: String, apiUrl: HttpUrl? = null): HttpUrl {
         .addPathSegment("image")
         .build()
 }
+
+fun getPokemonImageFileByName(name: String, filesDir: String): File = File(filesDir, "${name}.png")

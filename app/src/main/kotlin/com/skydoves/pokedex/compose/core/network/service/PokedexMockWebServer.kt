@@ -95,7 +95,7 @@ private class PokedexMockDispatcher(private val json: Json) : Dispatcher() {
         if (requestUrl == null) return MockResponse().setResponseCode(404)
         val pathSegments = requestUrl.pathSegments
         val pokemonName = pathSegments[pathSegments.size - 2]
-        val image = GradientBitmap(width = 500, height = 500, seed = pokemonName.hashCode())
+        val image = GradientBitmap(width = 300, height = 300, seed = pokemonName.hashCode())
         val buffer = Buffer()
         image.compress(Bitmap.CompressFormat.PNG, 100, buffer.outputStream())
         return MockResponse().setResponseCode(200).setBody(buffer)

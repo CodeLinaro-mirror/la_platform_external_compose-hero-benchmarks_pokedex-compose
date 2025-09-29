@@ -74,6 +74,7 @@ import com.bumptech.glide.integration.compose.placeholder
 import com.skydoves.pokedex.compose.R
 import com.skydoves.pokedex.compose.core.PokedexFeatureFlags
 import com.skydoves.pokedex.compose.core.data.repository.details.FakeDetailsRepository
+import com.skydoves.pokedex.compose.core.database.entitiy.mapper.getPokemonImageFileByName
 import com.skydoves.pokedex.compose.core.database.entitiy.mapper.getPokemonImageUrlByName
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexCircularProgress
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexText
@@ -83,6 +84,7 @@ import com.skydoves.pokedex.compose.core.designsystem.utils.getPokemonTypeColor
 import com.skydoves.pokedex.compose.core.model.PokemonInfo
 import com.skydoves.pokedex.compose.core.navigation.boundsTransform
 import com.skydoves.pokedex.compose.core.navigation.currentComposeNavigator
+import com.skydoves.pokedex.compose.core.network.di.ModuleLocator
 import com.skydoves.pokedex.compose.core.preview.PokedexPreviewTheme
 import com.skydoves.pokedex.compose.core.preview.PreviewUtils
 
@@ -234,16 +236,29 @@ private fun DetailsHeader(
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 private fun PokemonHeaderImage(pokemonName: String?, modifier: Modifier) {
-    val pokemonImageUrl =
+    val imageModel =
         if (pokemonName != null) {
-            getPokemonImageUrlByName(pokemonName).toString()
+            when (PokedexFeatureFlags.FetchPokemonImagesFromDisk) {
+                true -> {
+                    val context = LocalContext.current
+                    getPokemonImageFileByName(
+                        name = pokemonName,
+                        filesDir = context.filesDir.absolutePath,
+                    )
+                }
+                false ->
+                    getPokemonImageUrlByName(
+                        name = pokemonName,
+                        apiUrl = ModuleLocator.networkModule.baseUrl,
+                    )
+            }
         } else null
     if (PokedexFeatureFlags.UseCoil) {
         AsyncImage(
             modifier = modifier,
             model =
                 ImageRequest.Builder(LocalContext.current)
-                    .data(pokemonImageUrl)
+                    .data(imageModel)
                     .crossfade(PokemonHeaderImageCrossfadeDurationMillis)
                     .build(),
             contentDescription = pokemonName,
@@ -253,7 +268,7 @@ private fun PokemonHeaderImage(pokemonName: String?, modifier: Modifier) {
     } else {
         GlideImage(
             modifier = modifier,
-            model = pokemonImageUrl,
+            model = imageModel,
             contentScale = ContentScale.Inside,
             transition = CrossFade(tween(PokemonHeaderImageCrossfadeDurationMillis)),
             contentDescription = pokemonName,
