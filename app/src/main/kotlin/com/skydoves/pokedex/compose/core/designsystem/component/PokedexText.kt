@@ -37,8 +37,8 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun PokedexText(
     text: String,
-    previewText: String = text,
     modifier: Modifier = Modifier,
+    previewText: String = text,
     color: Color = Color.Unspecified,
     fontSize: TextUnit = TextUnit.Unspecified,
     fontStyle: FontStyle? = null,
