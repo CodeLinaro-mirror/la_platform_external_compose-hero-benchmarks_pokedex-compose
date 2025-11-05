@@ -37,7 +37,7 @@ abstract class Navigator {
     }
 }
 
-abstract class AppComposeNavigator<T : Any> : Navigator() {
+abstract class AppComposeNavigator<T : PokedexScreen> : Navigator() {
     abstract fun navigate(route: T, optionsBuilder: (NavOptionsBuilder.() -> Unit)? = null)
 
     abstract fun <R> navigateBackWithResult(key: String, result: R, route: T?)
@@ -56,11 +56,11 @@ abstract class AppComposeNavigator<T : Any> : Navigator() {
     private fun NavController.handleComposeNavigationCommand(navigationCommand: NavigationCommand) {
         when (navigationCommand) {
             is ComposeNavigationCommand.NavigateToRoute<*> -> {
-                navigate(navigationCommand.route, navigationCommand.options)
+                navigate(navigationCommand.route.asRoute(), navigationCommand.options)
             }
             NavigationCommand.NavigateUp -> navigateUp()
             is ComposeNavigationCommand.PopUpToRoute<*> ->
-                popBackStack(navigationCommand.route, navigationCommand.inclusive)
+                popBackStack(navigationCommand.route.asRoute(), navigationCommand.inclusive)
             is ComposeNavigationCommand.NavigateUpWithResult<*, *> -> {
                 navUpWithResult(navigationCommand)
             }
@@ -71,9 +71,10 @@ abstract class AppComposeNavigator<T : Any> : Navigator() {
         navigationCommand: ComposeNavigationCommand.NavigateUpWithResult<*, *>
     ) {
         val backStackEntry =
-            navigationCommand.route?.let { getBackStackEntry(it) } ?: previousBackStackEntry
+            navigationCommand.route?.let { getBackStackEntry(it.asRoute()) }
+                ?: previousBackStackEntry
         backStackEntry?.savedStateHandle?.set(navigationCommand.key, navigationCommand.result)
 
-        navigationCommand.route?.let { popBackStack(it, false) } ?: navigateUp()
+        navigationCommand.route?.let { popBackStack(it.asRoute(), false) } ?: navigateUp()
     }
 }
