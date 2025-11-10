@@ -38,7 +38,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -54,6 +53,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -72,6 +73,8 @@ import com.bumptech.glide.integration.compose.placeholder
 import com.skydoves.pokedex.compose.R
 import com.skydoves.pokedex.compose.core.PokedexFeatureFlags
 import com.skydoves.pokedex.compose.core.data.repository.home.FakeHomeRepository
+import com.skydoves.pokedex.compose.core.database.entitiy.mapper.getPokemonImageFileByName
+import com.skydoves.pokedex.compose.core.database.entitiy.mapper.getPokemonImageUrlByName
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexAppBar
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexCircularProgress
 import com.skydoves.pokedex.compose.core.designsystem.component.pokedexSharedElement
@@ -82,15 +85,14 @@ import com.skydoves.pokedex.compose.core.navigation.boundsTransform
 import com.skydoves.pokedex.compose.core.navigation.currentComposeNavigator
 import com.skydoves.pokedex.compose.core.preview.PokedexPreviewTheme
 import com.skydoves.pokedex.compose.core.preview.PreviewUtils
-import com.skydoves.pokedex.compose.core.viewmodel.LocalPokedexViewModelFactory
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun PokedexHome(
-    sharedTransitionScope: SharedTransitionScope,
+    sharedTransitionScope: SharedTransitionScope?,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    homeViewModel: HomeViewModel = viewModel(factory = LocalPokedexViewModelFactory.current),
+    homeViewModel: HomeViewModel,
 ) {
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
     val pokemonList by homeViewModel.pokemonList.collectAsStateWithLifecycle()
@@ -110,12 +112,17 @@ fun PokedexHome(
 
 @Composable
 private fun HomeContent(
-    sharedTransitionScope: SharedTransitionScope,
+    sharedTransitionScope: SharedTransitionScope?,
     animatedVisibilityScope: AnimatedVisibilityScope,
     uiState: HomeUiState,
     pokemonList: ImmutableList<Pokemon>,
     fetchNextPokemonList: () -> Unit,
 ) {
+    if (sharedTransitionScope != null) {
+        val statusText =
+            "pokedex-home-transition-active-${sharedTransitionScope.isTransitionActive}"
+        Text(statusText, Modifier.semantics { testTag = statusText })
+    }
     Box(modifier = Modifier.fillMaxSize()) {
         val gridState = rememberLazyGridState()
         LaunchedEffect(gridState, pokemonList) {
@@ -127,6 +134,12 @@ private fun HomeContent(
                     }
                 }
         }
+        // This read is hoisted to avoid reading it in every composable. It's prudent to assume
+        // that this is not an optimization applied by default in most codebases.
+        val filesDir =
+            if (PokedexFeatureFlags.FetchPokemonImagesFromDisk) {
+                LocalContext.current.filesDir.absolutePath
+            } else ""
         LazyVerticalGrid(
             state = gridState,
             modifier = Modifier.testTag("PokedexList"),
@@ -138,6 +151,7 @@ private fun HomeContent(
                     animatedVisibilityScope = animatedVisibilityScope,
                     sharedTransitionScope = sharedTransitionScope,
                     pokemon = pokemon,
+                    filesDir = filesDir,
                 )
             }
         }
@@ -151,9 +165,10 @@ private fun HomeContent(
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 private fun PokemonCard(
-    sharedTransitionScope: SharedTransitionScope,
+    sharedTransitionScope: SharedTransitionScope?,
     animatedVisibilityScope: AnimatedVisibilityScope,
     pokemon: Pokemon,
+    filesDir: String,
 ) {
     val composeNavigator = currentComposeNavigator
     val palette by remember { mutableStateOf<Palette?>(null) }
@@ -161,12 +176,12 @@ private fun PokemonCard(
 
     Card(
         modifier =
-            Modifier.padding(6.dp).fillMaxWidth().testTag("Pokemon").clickable {
+            Modifier.padding(6.dp).fillMaxWidth().testTag("${pokemon.name}_card").clickable {
                 composeNavigator.navigate(PokedexScreen.Details(pokemon = pokemon))
             },
         shape = RoundedCornerShape(14.dp),
         colors =
-            CardColors(
+            CardDefaults.cardColors(
                 containerColor = backgroundColor,
                 contentColor = backgroundColor,
                 disabledContainerColor = backgroundColor,
@@ -179,32 +194,47 @@ private fun PokemonCard(
                 Modifier.align(Alignment.CenterHorizontally)
                     .padding(top = 20.dp)
                     .size(120.dp)
-                    .pokedexSharedElement(
-                        sharedTransitionScope = sharedTransitionScope,
-                        isLocalInspectionMode = LocalInspectionMode.current,
-                        state =
-                            sharedTransitionScope.rememberSharedContentState(
-                                key = "image-${pokemon.name}"
-                            ),
-                        animatedVisibilityScope = animatedVisibilityScope,
-                        boundsTransform = boundsTransform,
+                    .then(
+                        if (
+                            sharedTransitionScope != null &&
+                                PokedexFeatureFlags.EnableSharedElementTransitions
+                        ) {
+                            Modifier.pokedexSharedElement(
+                                sharedTransitionScope = sharedTransitionScope,
+                                isLocalInspectionMode = LocalInspectionMode.current,
+                                state =
+                                    sharedTransitionScope.rememberSharedContentState(
+                                        key = "image-${pokemon.name}"
+                                    ),
+                                animatedVisibilityScope = animatedVisibilityScope,
+                                boundsTransform = boundsTransform,
+                            )
+                        } else Modifier
                     ),
-            pokemon = pokemon
+            pokemon = pokemon,
+            filesDir = filesDir,
         )
 
         Text(
             modifier =
                 Modifier.align(Alignment.CenterHorizontally)
                     .fillMaxWidth()
-                    .pokedexSharedElement(
-                        sharedTransitionScope = sharedTransitionScope,
-                        isLocalInspectionMode = LocalInspectionMode.current,
-                        state =
-                            sharedTransitionScope.rememberSharedContentState(
-                                key = "name-${pokemon.name}"
-                            ),
-                        animatedVisibilityScope = animatedVisibilityScope,
-                        boundsTransform = boundsTransform,
+                    .then(
+                        if (
+                            sharedTransitionScope != null &&
+                                PokedexFeatureFlags.EnableSharedElementTransitions
+                        ) {
+                            Modifier.pokedexSharedElement(
+                                sharedTransitionScope = sharedTransitionScope,
+                                isLocalInspectionMode = LocalInspectionMode.current,
+                                state =
+                                    sharedTransitionScope.rememberSharedContentState(
+                                        key = "name-${pokemon.name}"
+                                    ),
+                                animatedVisibilityScope = animatedVisibilityScope,
+                                boundsTransform = boundsTransform,
+                            )
+                        } else Modifier
                     )
                     .padding(12.dp),
             text = pokemon.name,
@@ -218,14 +248,23 @@ private fun PokemonCard(
 
 @Composable
 @OptIn(ExperimentalGlideComposeApi::class)
-private fun PokemonCardImage(pokemon: Pokemon, modifier: Modifier = Modifier) {
+private fun PokemonCardImage(pokemon: Pokemon, filesDir: String, modifier: Modifier = Modifier) {
+    val imageModel =
+        when (PokedexFeatureFlags.FetchPokemonImagesFromDisk) {
+            true -> {
+                remember(pokemon.name, filesDir) {
+                    getPokemonImageFileByName(pokemon.name, filesDir)
+                }
+            }
+            false -> getPokemonImageUrlByName(pokemon.name).toString()
+        }
     if (PokedexFeatureFlags.UseCoil) {
         AsyncImage(
             modifier = modifier,
             contentDescription = pokemon.name,
             model =
                 ImageRequest.Builder(LocalContext.current)
-                    .data(pokemon.imageUrl)
+                    .data(imageModel)
                     .crossfade(PokemonCardImageCrossfadeDurationMillis)
                     .build(),
             contentScale = ContentScale.Inside,
@@ -235,7 +274,7 @@ private fun PokemonCardImage(pokemon: Pokemon, modifier: Modifier = Modifier) {
         GlideImage(
             modifier = modifier,
             contentDescription = pokemon.name,
-            model = pokemon.imageUrl,
+            model = imageModel,
             contentScale = ContentScale.Inside,
             transition = CrossFade(tween(PokemonCardImageCrossfadeDurationMillis)),
             loading = placeholder(painterResource(id = R.drawable.pokemon_preview)),
@@ -254,7 +293,7 @@ private fun PokedexHomePreview() {
                     animatedVisibilityScope = this,
                     sharedTransitionScope = this@SharedTransitionScope,
                     homeViewModel =
-                        viewModel { HomeViewModel(homeRepository = FakeHomeRepository()) }
+                        viewModel { HomeViewModel(homeRepository = FakeHomeRepository()) },
                 )
             }
         }
@@ -277,5 +316,5 @@ private fun HomeContentPreview() {
     }
 }
 
-private const val PaginationBufferSize = 14
+private const val PaginationBufferSize = 8
 private const val PokemonCardImageCrossfadeDurationMillis = 250
