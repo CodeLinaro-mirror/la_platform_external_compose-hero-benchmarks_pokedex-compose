@@ -18,20 +18,52 @@ package com.skydoves.pokedex.compose.navigation
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.skydoves.pokedex.compose.core.PokedexFeatureFlags
 import com.skydoves.pokedex.compose.core.navigation.PokedexScreen
+import com.skydoves.pokedex.compose.core.navigation.navigationEnterTransition
+import com.skydoves.pokedex.compose.core.navigation.navigationExitTransition
+import com.skydoves.pokedex.compose.core.network.di.ModuleLocator
+import com.skydoves.pokedex.compose.core.viewmodel.pokedexViewModelFactory
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun PokedexNavHost(navHostController: NavHostController) {
-    SharedTransitionLayout {
-        NavHost(
-            navController = navHostController,
-            startDestination = PokedexScreen.Home,
-        ) {
-            pokedexNavigation(this@SharedTransitionLayout)
+fun PokedexNavHost(navHostController: NavHostController, startDestination: PokedexScreen) {
+    if (PokedexFeatureFlags.EnableSharedTransitionScope) {
+        SharedTransitionLayout {
+            PokedexNavigation(
+                navHostController,
+                sharedTransitionScope = this@SharedTransitionLayout,
+                startDestination = startDestination,
+            )
         }
+    } else {
+        PokedexNavigation(
+            navHostController,
+            sharedTransitionScope = null,
+            startDestination = startDestination,
+        )
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun PokedexNavigation(
+    navHostController: NavHostController,
+    sharedTransitionScope: SharedTransitionScope?,
+    startDestination: PokedexScreen,
+) {
+    val viewModelFactory = remember { pokedexViewModelFactory(ModuleLocator.repositoryModule) }
+    NavHost(
+        navController = navHostController,
+        startDestination = startDestination.asRoute(),
+        enterTransition = { navigationEnterTransition },
+        exitTransition = { navigationExitTransition },
+    ) {
+        pokedexNavigation(sharedTransitionScope = sharedTransitionScope, viewModelFactory)
     }
 }

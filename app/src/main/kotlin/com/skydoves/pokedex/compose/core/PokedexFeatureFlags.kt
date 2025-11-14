@@ -23,4 +23,27 @@ object PokedexFeatureFlags {
      * note that Glide will always be configured.
      */
     var UseCoil = true
+
+    /**
+     * Whether [androidx.compose.animation.SharedTransitionScope] should be used or replaced by
+     * simpler layouts instead. If false, shared element transitions will be off too.
+     */
+    var EnableSharedTransitionScope = true
+
+    /**
+     * Whether to enable shared element transitions between the activities.
+     * [EnableSharedTransitionScope] must be set to true, otherwise this flag will be false.
+     */
+    var EnableSharedElementTransitions = true
+        get() = EnableSharedTransitionScope && field
+
+    /**
+     * Whether to fetch pokemon images from disk instead of the network. Requires storing images in
+     * the app's files directory before the startup, e.g. through PokedexSetupActivity.
+     *
+     * Disabling this flag means loading images from the network. If using the local mock web
+     * server, that means generating the gradient images on the fly, which can incur significant
+     * performance impact. Disable the flag to simulate a worse performance of the app.
+     */
+    var FetchPokemonImagesFromDisk = true
 }
