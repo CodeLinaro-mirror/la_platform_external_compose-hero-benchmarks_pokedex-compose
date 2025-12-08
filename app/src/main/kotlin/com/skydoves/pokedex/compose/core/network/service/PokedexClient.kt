@@ -19,22 +19,20 @@ package com.skydoves.pokedex.compose.core.network.service
 import com.skydoves.pokedex.compose.core.model.PokemonInfo
 import com.skydoves.pokedex.compose.core.network.model.PokemonResponse
 
-class PokedexClient(
-    private val pokedexService: PokedexService,
-) {
+class PokedexClient(private val pokedexService: PokedexService) {
 
     suspend fun fetchPokemonList(page: Int): Result<PokemonResponse> =
         kotlin.runCatching {
-            pokedexService.fetchPokemonList(
-                limit = PAGING_SIZE,
-                offset = page * PAGING_SIZE,
-            )
+            pokedexService.fetchPokemonList(limit = PAGING_SIZE, offset = page * PAGING_SIZE)
         }
 
     suspend fun fetchPokemonInfo(name: String): Result<PokemonInfo> =
         kotlin.runCatching { pokedexService.fetchPokemonInfo(name = name) }
 
     companion object {
-        private const val PAGING_SIZE = 20
+        // NOTE: Keep this aligned with Pokedex-Views' paging size.
+        // The paging size is a bit higher as we perform fast flings in our benchmarks, and thus
+        // want more content to be ready.
+        private const val PAGING_SIZE = 64
     }
 }

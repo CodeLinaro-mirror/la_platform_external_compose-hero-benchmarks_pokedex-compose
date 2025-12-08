@@ -37,11 +37,24 @@ import kotlin.reflect.typeOf
 import kotlinx.serialization.Serializable
 
 sealed interface PokedexScreen {
-    @Serializable object Home : PokedexScreen
+    fun asRoute(): String
+
+    @Serializable
+    object Home : PokedexScreen {
+        const val NAVIGATION_ROUTE = "home"
+
+        override fun asRoute() = NAVIGATION_ROUTE
+    }
 
     @Serializable
     data class Details(val pokemon: Pokemon) : PokedexScreen {
+        override fun asRoute() = createRoute(pokemon.name)
+
         companion object {
+            const val NAVIGATION_ROUTE = "pokemon/{name}/"
+
+            fun createRoute(name: String) = "pokemon/$name/"
+
             val typeMap = mapOf(typeOf<Pokemon>() to PokemonType)
         }
     }
