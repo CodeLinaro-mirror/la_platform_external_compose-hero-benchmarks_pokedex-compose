@@ -20,7 +20,6 @@ import androidx.compose.runtime.Stable
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.skydoves.pokedex.compose.core.data.repository.details.DetailsRepository
-import com.skydoves.pokedex.compose.core.model.Pokemon
 import com.skydoves.pokedex.compose.core.model.PokemonInfo
 import com.skydoves.pokedex.compose.core.viewmodel.BaseViewModel
 import com.skydoves.pokedex.compose.core.viewmodel.ViewModelStateFlow
@@ -37,14 +36,14 @@ class DetailsViewModel(detailsRepository: DetailsRepository, savedStateHandle: S
     internal val uiState: ViewModelStateFlow<DetailsUiState> =
         viewModelStateFlow(DetailsUiState.Loading)
 
-    val pokemon = savedStateHandle.getStateFlow<Pokemon?>("pokemon", null)
+    val pokemonName = savedStateHandle.getStateFlow<String?>("name", null)
     @OptIn(ExperimentalCoroutinesApi::class)
     val pokemonInfo: StateFlow<PokemonInfo?> =
-        pokemon
+        pokemonName
             .filterNotNull()
             .flatMapLatest { pokemon ->
                 detailsRepository.fetchPokemonInfo(
-                    name = pokemon.name.replaceFirstChar { it.lowercase() },
+                    name = pokemon.replaceFirstChar { it.lowercase() },
                     onComplete = { uiState.tryEmit(key, DetailsUiState.Idle) },
                     onError = { uiState.tryEmit(key, DetailsUiState.Error(it)) },
                 )
