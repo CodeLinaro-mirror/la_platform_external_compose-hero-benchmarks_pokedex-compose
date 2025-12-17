@@ -5,7 +5,6 @@ plugins {
     id("AndroidXComposePlugin")
     id("com.google.devtools.ksp")
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
     id("androidx.room") version "2.7.0"
     alias(libs.plugins.kotlinSerialization)
 }
