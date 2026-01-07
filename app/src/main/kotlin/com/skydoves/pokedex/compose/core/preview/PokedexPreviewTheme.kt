@@ -29,11 +29,9 @@ import com.skydoves.pokedex.compose.core.navigation.PokedexComposeNavigator
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun PokedexPreviewTheme(
-    content: @Composable SharedTransitionScope.(AnimatedVisibilityScope) -> Unit,
+    content: @Composable SharedTransitionScope.(AnimatedVisibilityScope) -> Unit
 ) {
-    CompositionLocalProvider(
-        LocalComposeNavigator provides PokedexComposeNavigator(),
-    ) {
+    CompositionLocalProvider(LocalComposeNavigator provides PokedexComposeNavigator()) {
         PokedexTheme {
             SharedTransitionScope { modifier ->
                 AnimatedVisibility(modifier = modifier, visible = true, label = "") {

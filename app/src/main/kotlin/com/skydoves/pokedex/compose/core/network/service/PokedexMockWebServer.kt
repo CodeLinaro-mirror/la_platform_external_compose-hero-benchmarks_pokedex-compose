@@ -18,8 +18,10 @@ package com.skydoves.pokedex.compose.core.network.service
 
 import android.graphics.Bitmap
 import androidx.compose.integration.hero.common.implementation.GradientBitmap
-import com.skydoves.pokedex.compose.core.model.FakeRandomizedNames
+import com.skydoves.pokedex.compose.core.model.AllPokemonNames
 import com.skydoves.pokedex.compose.core.model.fakePokemonInfo
+import com.skydoves.pokedex.compose.core.model.fakePokemonNames
+import com.skydoves.pokedex.compose.core.model.fakePokemonNetworkModels
 import com.skydoves.pokedex.compose.core.network.model.fakePokemonResponse
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -48,7 +50,7 @@ private class PokedexMockDispatcher(private val json: Json) : Dispatcher() {
         val response =
             try {
                 when {
-                    pokemonEndpointRegex.matches(requestPath) -> pokemonHandler()
+                    pokemonEndpointRegex.matches(requestPath) -> pokemonHandler(request)
                     pokemonInfoEndpointRegex.matches(requestPath) -> pokemonInfoHandler(request)
                     pokemonImageEndpointRegex.matches(requestPath) -> pokemonImageHandler(request)
                     else -> MockResponse().setResponseCode(404)
@@ -62,10 +64,19 @@ private class PokedexMockDispatcher(private val json: Json) : Dispatcher() {
         return response
     }
 
-    private fun pokemonHandler(): MockResponse {
-        return MockResponse()
-            .setResponseCode(200)
-            .setBody(json.encodeToString(fakePokemonResponse()))
+    private fun pokemonHandler(request: RecordedRequest): MockResponse {
+        val requestUrl = request.requestUrl
+        if (requestUrl == null) return MockResponse().setResponseCode(404)
+        val maxPokemon = requestUrl.queryParameter("limit")?.toInt() ?: 20
+        val fetchingOffset = requestUrl.queryParameter("offset")?.toInt() ?: 0
+        val response =
+            fakePokemonResponse(
+                pokemons =
+                    fakePokemonNetworkModels(
+                        pokemonNames = fakePokemonNames(limit = maxPokemon, offset = fetchingOffset)
+                    )
+            )
+        return MockResponse().setResponseCode(200).setBody(json.encodeToString(response))
     }
 
     private fun pokemonInfoHandler(request: RecordedRequest): MockResponse {
@@ -74,15 +85,17 @@ private class PokedexMockDispatcher(private val json: Json) : Dispatcher() {
         val pokemonName = requestUrl.pathSegments.last()
         val fakePokemonInfo =
             json.encodeToString(
-                fakePokemonInfo(id = FakeRandomizedNames.indexOf(pokemonName), name = pokemonName)
+                fakePokemonInfo(id = AllPokemonNames.indexOf(pokemonName), name = pokemonName)
             )
         return MockResponse().setResponseCode(200).setBody(fakePokemonInfo)
     }
 
     private fun pokemonImageHandler(request: RecordedRequest): MockResponse {
-        val pathSegments = request.requestUrl!!.pathSegments
+        val requestUrl = request.requestUrl
+        if (requestUrl == null) return MockResponse().setResponseCode(404)
+        val pathSegments = requestUrl.pathSegments
         val pokemonName = pathSegments[pathSegments.size - 2]
-        val image = GradientBitmap(width = 500, height = 500, seed = pokemonName.hashCode())
+        val image = GradientBitmap(width = 300, height = 300, seed = pokemonName.hashCode())
         val buffer = Buffer()
         image.compress(Bitmap.CompressFormat.PNG, 100, buffer.outputStream())
         return MockResponse().setResponseCode(200).setBody(buffer)
