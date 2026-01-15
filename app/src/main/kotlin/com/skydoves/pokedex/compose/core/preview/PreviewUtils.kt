@@ -23,15 +23,11 @@ object PreviewUtils {
 
     @Suppress("Unused")
     fun mockPokemon() =
-        Pokemon(page = 0, name = "bulbasaur", imageUrl = "https://pokeapi.co/api/v2/pokemon/1/")
+        Pokemon(name = "bulbasaur", imageUrl = "https://pokeapi.co/api/v2/pokemon/1/")
 
     fun mockPokemonList() =
         List(10) {
-            Pokemon(
-                page = 0,
-                name = "bulbasaur$it",
-                imageUrl = "https://pokeapi.co/api/v2/pokemon/1/",
-            )
+            Pokemon(name = "bulbasaur$it", imageUrl = "https://pokeapi.co/api/v2/pokemon/1/")
         }
 
     fun mockPokemonInfo() =
