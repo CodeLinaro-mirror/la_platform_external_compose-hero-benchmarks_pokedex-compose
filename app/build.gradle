@@ -12,7 +12,7 @@ plugins {
 android {
     namespace = "com.skydoves.pokedex.compose"
 
-    compileSdk = 35
+    compileSdk { version = release(35) }
 
     defaultConfig {
         // Propagate the proguard rules to be used by the including app module
