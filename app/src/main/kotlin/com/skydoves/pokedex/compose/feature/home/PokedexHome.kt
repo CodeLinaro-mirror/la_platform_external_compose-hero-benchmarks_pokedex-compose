@@ -19,6 +19,7 @@
 package com.skydoves.pokedex.compose.feature.home
 
 import android.content.res.Configuration
+import androidx.activity.compose.ReportDrawnWhen
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -45,6 +46,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -140,6 +142,9 @@ private fun HomeContent(
             if (PokedexFeatureFlags.FetchPokemonImagesFromDisk) {
                 LocalContext.current.filesDir.absolutePath
             } else ""
+
+        ReportDrawnWhen { pokemonList.isNotEmpty() }
+
         LazyVerticalGrid(
             state = gridState,
             modifier = Modifier.testTag("PokedexList"),
