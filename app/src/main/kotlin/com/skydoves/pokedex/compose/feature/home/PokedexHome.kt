@@ -75,7 +75,6 @@ import com.bumptech.glide.integration.compose.placeholder
 import com.skydoves.pokedex.compose.R
 import com.skydoves.pokedex.compose.core.PokedexFeatureFlags
 import com.skydoves.pokedex.compose.core.data.repository.home.FakeHomeRepository
-import com.skydoves.pokedex.compose.core.database.entitiy.mapper.getPokemonImageFileByName
 import com.skydoves.pokedex.compose.core.database.entitiy.mapper.getPokemonImageUrlByName
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexAppBar
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexCircularProgress
@@ -136,12 +135,6 @@ private fun HomeContent(
                     }
                 }
         }
-        // This read is hoisted to avoid reading it in every composable. It's prudent to assume
-        // that this is not an optimization applied by default in most codebases.
-        val filesDir =
-            if (PokedexFeatureFlags.FetchPokemonImagesFromDisk) {
-                LocalContext.current.filesDir.absolutePath
-            } else ""
 
         ReportDrawnWhen { pokemonList.isNotEmpty() }
 
@@ -156,7 +149,6 @@ private fun HomeContent(
                     animatedVisibilityScope = animatedVisibilityScope,
                     sharedTransitionScope = sharedTransitionScope,
                     pokemon = pokemon,
-                    filesDir = filesDir,
                 )
             }
         }
@@ -173,7 +165,6 @@ private fun PokemonCard(
     sharedTransitionScope: SharedTransitionScope?,
     animatedVisibilityScope: AnimatedVisibilityScope,
     pokemon: Pokemon,
-    filesDir: String,
 ) {
     val composeNavigator = currentComposeNavigator
     val palette by remember { mutableStateOf<Palette?>(null) }
@@ -217,7 +208,6 @@ private fun PokemonCard(
                         } else Modifier
                     ),
             pokemon = pokemon,
-            filesDir = filesDir,
         )
 
         Text(
@@ -253,16 +243,8 @@ private fun PokemonCard(
 
 @Composable
 @OptIn(ExperimentalGlideComposeApi::class)
-private fun PokemonCardImage(pokemon: Pokemon, filesDir: String, modifier: Modifier = Modifier) {
-    val imageModel =
-        when (PokedexFeatureFlags.FetchPokemonImagesFromDisk) {
-            true -> {
-                remember(pokemon.name, filesDir) {
-                    getPokemonImageFileByName(pokemon.name, filesDir)
-                }
-            }
-            false -> getPokemonImageUrlByName(pokemon.name).toString()
-        }
+private fun PokemonCardImage(pokemon: Pokemon, modifier: Modifier = Modifier) {
+    val imageModel = getPokemonImageUrlByName(pokemon.name).toString()
     if (PokedexFeatureFlags.UseCoil) {
         AsyncImage(
             modifier = modifier,
