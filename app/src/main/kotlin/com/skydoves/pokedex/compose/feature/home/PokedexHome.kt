@@ -19,6 +19,7 @@
 package com.skydoves.pokedex.compose.feature.home
 
 import android.content.res.Configuration
+import androidx.activity.compose.ReportDrawnWhen
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -45,6 +46,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,6 +75,8 @@ import com.bumptech.glide.integration.compose.placeholder
 import com.skydoves.pokedex.compose.R
 import com.skydoves.pokedex.compose.core.PokedexFeatureFlags
 import com.skydoves.pokedex.compose.core.data.repository.home.FakeHomeRepository
+import com.skydoves.pokedex.compose.core.database.entitiy.mapper.getPokemonImageFileByName
+import com.skydoves.pokedex.compose.core.database.entitiy.mapper.getPokemonImageUrlByName
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexAppBar
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexCircularProgress
 import com.skydoves.pokedex.compose.core.designsystem.component.pokedexSharedElement
@@ -132,6 +136,15 @@ private fun HomeContent(
                     }
                 }
         }
+        // This read is hoisted to avoid reading it in every composable. It's prudent to assume
+        // that this is not an optimization applied by default in most codebases.
+        val filesDir =
+            if (PokedexFeatureFlags.FetchPokemonImagesFromDisk) {
+                LocalContext.current.filesDir.absolutePath
+            } else ""
+
+        ReportDrawnWhen { pokemonList.isNotEmpty() }
+
         LazyVerticalGrid(
             state = gridState,
             modifier = Modifier.testTag("PokedexList"),
@@ -143,6 +156,7 @@ private fun HomeContent(
                     animatedVisibilityScope = animatedVisibilityScope,
                     sharedTransitionScope = sharedTransitionScope,
                     pokemon = pokemon,
+                    filesDir = filesDir,
                 )
             }
         }
@@ -159,6 +173,7 @@ private fun PokemonCard(
     sharedTransitionScope: SharedTransitionScope?,
     animatedVisibilityScope: AnimatedVisibilityScope,
     pokemon: Pokemon,
+    filesDir: String,
 ) {
     val composeNavigator = currentComposeNavigator
     val palette by remember { mutableStateOf<Palette?>(null) }
@@ -202,6 +217,7 @@ private fun PokemonCard(
                         } else Modifier
                     ),
             pokemon = pokemon,
+            filesDir = filesDir,
         )
 
         Text(
@@ -237,14 +253,23 @@ private fun PokemonCard(
 
 @Composable
 @OptIn(ExperimentalGlideComposeApi::class)
-private fun PokemonCardImage(pokemon: Pokemon, modifier: Modifier = Modifier) {
+private fun PokemonCardImage(pokemon: Pokemon, filesDir: String, modifier: Modifier = Modifier) {
+    val imageModel =
+        when (PokedexFeatureFlags.FetchPokemonImagesFromDisk) {
+            true -> {
+                remember(pokemon.name, filesDir) {
+                    getPokemonImageFileByName(pokemon.name, filesDir)
+                }
+            }
+            false -> getPokemonImageUrlByName(pokemon.name).toString()
+        }
     if (PokedexFeatureFlags.UseCoil) {
         AsyncImage(
             modifier = modifier,
             contentDescription = pokemon.name,
             model =
                 ImageRequest.Builder(LocalContext.current)
-                    .data(pokemon.imageUrl)
+                    .data(imageModel)
                     .crossfade(PokemonCardImageCrossfadeDurationMillis)
                     .build(),
             contentScale = ContentScale.Inside,
@@ -254,7 +279,7 @@ private fun PokemonCardImage(pokemon: Pokemon, modifier: Modifier = Modifier) {
         GlideImage(
             modifier = modifier,
             contentDescription = pokemon.name,
-            model = pokemon.imageUrl,
+            model = imageModel,
             contentScale = ContentScale.Inside,
             transition = CrossFade(tween(PokemonCardImageCrossfadeDurationMillis)),
             loading = placeholder(painterResource(id = R.drawable.pokemon_preview)),
@@ -296,5 +321,5 @@ private fun HomeContentPreview() {
     }
 }
 
-private const val PaginationBufferSize = 14
+private const val PaginationBufferSize = 8
 private const val PokemonCardImageCrossfadeDurationMillis = 250
