@@ -75,7 +75,6 @@ import com.bumptech.glide.integration.compose.placeholder
 import com.skydoves.pokedex.compose.R
 import com.skydoves.pokedex.compose.core.PokedexFeatureFlags
 import com.skydoves.pokedex.compose.core.data.repository.details.FakeDetailsRepository
-import com.skydoves.pokedex.compose.core.database.entitiy.mapper.getPokemonImageFileByName
 import com.skydoves.pokedex.compose.core.database.entitiy.mapper.getPokemonImageUrlByName
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexCircularProgress
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexText
@@ -241,20 +240,10 @@ private fun DetailsHeader(
 private fun PokemonHeaderImage(pokemonName: String?, modifier: Modifier) {
     val imageModel =
         if (pokemonName != null) {
-            when (PokedexFeatureFlags.FetchPokemonImagesFromDisk) {
-                true -> {
-                    val context = LocalContext.current
-                    getPokemonImageFileByName(
-                        name = pokemonName,
-                        filesDir = context.filesDir.absolutePath,
-                    )
-                }
-                false ->
-                    getPokemonImageUrlByName(
-                        name = pokemonName,
-                        apiUrl = ModuleLocator.networkModule.baseUrl,
-                    )
-            }
+            getPokemonImageUrlByName(
+                name = pokemonName,
+                apiUrl = ModuleLocator.networkModule.baseUrl,
+            )
         } else null
     if (PokedexFeatureFlags.UseCoil) {
         AsyncImage(
