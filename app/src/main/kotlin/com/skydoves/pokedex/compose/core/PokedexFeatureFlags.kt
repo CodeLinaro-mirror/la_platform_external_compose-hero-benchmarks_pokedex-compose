@@ -38,4 +38,11 @@ object PokedexFeatureFlags {
      */
     var EnableSharedElementTransitions = true
         get() = EnableSharedTransitionScope && field
+
+    /**
+     * Whether to initiate loading of data through launching coroutine directly on initial
+     * composition. If disabled, falls back to `collectStateWithLifecycle`, which has an extra frame
+     * delay when subscribing to the flow.
+     */
+    var UseLifecycleEffectForDataLoadingOnStartup = false
 }
