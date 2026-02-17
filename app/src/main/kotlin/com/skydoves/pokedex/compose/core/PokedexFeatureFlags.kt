@@ -45,4 +45,11 @@ object PokedexFeatureFlags {
      * delay when subscribing to the flow.
      */
     var UseLifecycleEffectForDataLoadingOnStartup = false
+
+    /**
+     * Whether to use background text prewarming.
+     *
+     * See [androidx.compose.foundation.text.LocalBackgroundTextMeasurementExecutor].
+     */
+    var UseBackgroundTextPrewarming = false
 }
