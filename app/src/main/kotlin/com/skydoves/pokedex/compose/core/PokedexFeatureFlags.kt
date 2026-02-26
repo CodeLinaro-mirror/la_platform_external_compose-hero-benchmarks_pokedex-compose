@@ -16,8 +16,6 @@
 
 package com.skydoves.pokedex.compose.core
 
-import com.skydoves.pokedex.compose.core.PokedexFeatureFlags.EnableSharedTransitionScope
-
 /** Contains feature flags for the Pokedex hero benchmark target */
 object PokedexFeatureFlags {
     /**
@@ -40,9 +38,12 @@ object PokedexFeatureFlags {
         get() = EnableSharedTransitionScope && field
 
     /**
-     * Whether to initiate loading of data through launching coroutine directly on initial
-     * composition. If disabled, falls back to `collectStateWithLifecycle`, which has an extra frame
-     * delay when subscribing to the flow.
+     * Whether to fetch pokemon images from disk instead of the network. Requires storing images in
+     * the app's files directory before the startup, e.g. through PokedexSetupActivity.
+     *
+     * Disabling this flag means loading images from the network. If using the local mock web
+     * server, that means generating the gradient images on the fly, which can incur significant
+     * performance impact. Disable the flag to simulate a worse performance of the app.
      */
-    var UseLifecycleEffectForDataLoadingOnStartup = false
+    var FetchPokemonImagesFromDisk = true
 }

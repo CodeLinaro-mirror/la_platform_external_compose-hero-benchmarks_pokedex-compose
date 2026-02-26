@@ -19,7 +19,6 @@
 package com.skydoves.pokedex.compose.feature.home
 
 import android.content.res.Configuration
-import androidx.activity.compose.ReportDrawnWhen
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -46,7 +45,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,7 +60,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.palette.graphics.Palette
@@ -76,6 +73,7 @@ import com.bumptech.glide.integration.compose.placeholder
 import com.skydoves.pokedex.compose.R
 import com.skydoves.pokedex.compose.core.PokedexFeatureFlags
 import com.skydoves.pokedex.compose.core.data.repository.home.FakeHomeRepository
+import com.skydoves.pokedex.compose.core.database.entitiy.mapper.getPokemonImageFileByName
 import com.skydoves.pokedex.compose.core.database.entitiy.mapper.getPokemonImageUrlByName
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexAppBar
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexCircularProgress
@@ -89,8 +87,6 @@ import com.skydoves.pokedex.compose.core.preview.PokedexPreviewTheme
 import com.skydoves.pokedex.compose.core.preview.PreviewUtils
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 
 @Composable
 fun PokedexHome(
@@ -99,18 +95,7 @@ fun PokedexHome(
     homeViewModel: HomeViewModel,
 ) {
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
-    val pokemonList by
-        if (PokedexFeatureFlags.UseLifecycleEffectForDataLoadingOnStartup) {
-            val scope = rememberCoroutineScope()
-            val pokemonList = remember { mutableStateOf(emptyList<Pokemon>()) }
-            LifecycleStartEffect(scope) {
-                scope.launch { homeViewModel.pokemonList.collect { pokemonList.value = it } }
-                onStopOrDispose { scope.cancel() }
-            }
-            pokemonList
-        } else {
-            homeViewModel.pokemonList.collectAsStateWithLifecycle()
-        }
+    val pokemonList by homeViewModel.pokemonList.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxSize()) {
         PokedexAppBar()
@@ -149,9 +134,12 @@ private fun HomeContent(
                     }
                 }
         }
-
-        ReportDrawnWhen { pokemonList.isNotEmpty() }
-
+        // This read is hoisted to avoid reading it in every composable. It's prudent to assume
+        // that this is not an optimization applied by default in most codebases.
+        val filesDir =
+            if (PokedexFeatureFlags.FetchPokemonImagesFromDisk) {
+                LocalContext.current.filesDir.absolutePath
+            } else ""
         LazyVerticalGrid(
             state = gridState,
             modifier = Modifier.testTag("PokedexList"),
@@ -163,6 +151,7 @@ private fun HomeContent(
                     animatedVisibilityScope = animatedVisibilityScope,
                     sharedTransitionScope = sharedTransitionScope,
                     pokemon = pokemon,
+                    filesDir = filesDir,
                 )
             }
         }
@@ -179,6 +168,7 @@ private fun PokemonCard(
     sharedTransitionScope: SharedTransitionScope?,
     animatedVisibilityScope: AnimatedVisibilityScope,
     pokemon: Pokemon,
+    filesDir: String,
 ) {
     val composeNavigator = currentComposeNavigator
     val palette by remember { mutableStateOf<Palette?>(null) }
@@ -222,6 +212,7 @@ private fun PokemonCard(
                         } else Modifier
                     ),
             pokemon = pokemon,
+            filesDir = filesDir,
         )
 
         Text(
@@ -257,8 +248,16 @@ private fun PokemonCard(
 
 @Composable
 @OptIn(ExperimentalGlideComposeApi::class)
-private fun PokemonCardImage(pokemon: Pokemon, modifier: Modifier = Modifier) {
-    val imageModel = getPokemonImageUrlByName(pokemon.name).toString()
+private fun PokemonCardImage(pokemon: Pokemon, filesDir: String, modifier: Modifier = Modifier) {
+    val imageModel =
+        when (PokedexFeatureFlags.FetchPokemonImagesFromDisk) {
+            true -> {
+                remember(pokemon.name, filesDir) {
+                    getPokemonImageFileByName(pokemon.name, filesDir)
+                }
+            }
+            false -> getPokemonImageUrlByName(pokemon.name).toString()
+        }
     if (PokedexFeatureFlags.UseCoil) {
         AsyncImage(
             modifier = modifier,
