@@ -46,7 +46,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,6 +62,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.palette.graphics.Palette
@@ -88,6 +89,8 @@ import com.skydoves.pokedex.compose.core.preview.PokedexPreviewTheme
 import com.skydoves.pokedex.compose.core.preview.PreviewUtils
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 @Composable
 fun PokedexHome(
@@ -96,7 +99,18 @@ fun PokedexHome(
     homeViewModel: HomeViewModel,
 ) {
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
-    val pokemonList by homeViewModel.pokemonList.collectAsStateWithLifecycle()
+    val pokemonList by
+        if (PokedexFeatureFlags.UseLifecycleEffectForDataLoadingOnStartup) {
+            val scope = rememberCoroutineScope()
+            val pokemonList = remember { mutableStateOf(emptyList<Pokemon>()) }
+            LifecycleStartEffect(scope) {
+                scope.launch { homeViewModel.pokemonList.collect { pokemonList.value = it } }
+                onStopOrDispose { scope.cancel() }
+            }
+            pokemonList
+        } else {
+            homeViewModel.pokemonList.collectAsStateWithLifecycle()
+        }
 
     Column(modifier = Modifier.fillMaxSize()) {
         PokedexAppBar()
