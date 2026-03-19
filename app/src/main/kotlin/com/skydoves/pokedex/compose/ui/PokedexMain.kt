@@ -19,6 +19,7 @@ package com.skydoves.pokedex.compose.ui
 import android.os.Trace
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.text.LocalBackgroundTextMeasurementExecutor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -37,14 +38,26 @@ import com.skydoves.pokedex.compose.core.navigation.PokedexComposeNavigator
 import com.skydoves.pokedex.compose.core.navigation.PokedexScreen
 import com.skydoves.pokedex.compose.core.network.di.ModuleLocator
 import com.skydoves.pokedex.compose.navigation.PokedexNavHost
+import java.util.concurrent.Executors
 
 @Composable
 fun PokedexMain(
     composeNavigator: AppComposeNavigator<PokedexScreen> = remember { PokedexComposeNavigator() },
     startDestination: PokedexScreen,
 ) {
+    val textMeasurementExecutor =
+        if (PokedexFeatureFlags.UseBackgroundTextPrewarming) {
+            remember {
+                Executors.newSingleThreadExecutor { Thread(it, "ComposeBackgroundTextPrewarmer") }
+            }
+        } else {
+            null
+        }
     PokedexTheme {
-        CompositionLocalProvider(LocalComposeNavigator provides composeNavigator) {
+        CompositionLocalProvider(
+            LocalComposeNavigator provides composeNavigator,
+            LocalBackgroundTextMeasurementExecutor provides textMeasurementExecutor,
+        ) {
             val context = LocalContext.current
             DisposableEffect(context) {
                 (context as? ComponentActivity)?.enableEdgeToEdge()
