@@ -19,11 +19,13 @@ package com.skydoves.pokedex.compose.ui
 import android.os.Trace
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.text.LocalBackgroundTextMeasurementExecutor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ProvidedValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
@@ -54,10 +56,17 @@ fun PokedexMain(
             null
         }
     PokedexTheme {
-        CompositionLocalProvider(
-            LocalComposeNavigator provides composeNavigator,
-            LocalBackgroundTextMeasurementExecutor provides textMeasurementExecutor,
-        ) {
+        var values: Array<ProvidedValue<*>> =
+            arrayOf(
+                LocalComposeNavigator provides composeNavigator,
+                LocalBackgroundTextMeasurementExecutor provides textMeasurementExecutor,
+            )
+        if (PokedexFeatureFlags.DisableOverscrollEffect) {
+            val providedValue = (LocalOverscrollFactory provides null)
+            values += providedValue
+        }
+
+        CompositionLocalProvider(*values) {
             val context = LocalContext.current
             DisposableEffect(context) {
                 (context as? ComponentActivity)?.enableEdgeToEdge()
