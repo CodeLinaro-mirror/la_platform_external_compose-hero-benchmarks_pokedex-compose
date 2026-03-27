@@ -19,6 +19,7 @@
 package com.skydoves.pokedex.compose.feature.details
 
 import android.content.res.Configuration
+import androidx.activity.compose.ReportDrawnWhen
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -74,7 +75,6 @@ import com.bumptech.glide.integration.compose.placeholder
 import com.skydoves.pokedex.compose.R
 import com.skydoves.pokedex.compose.core.PokedexFeatureFlags
 import com.skydoves.pokedex.compose.core.data.repository.details.FakeDetailsRepository
-import com.skydoves.pokedex.compose.core.database.entitiy.mapper.getPokemonImageFileByName
 import com.skydoves.pokedex.compose.core.database.entitiy.mapper.getPokemonImageUrlByName
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexCircularProgress
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexText
@@ -97,6 +97,8 @@ fun PokedexDetails(
     val uiState by detailsViewModel.uiState.collectAsStateWithLifecycle()
     val pokemonName by detailsViewModel.pokemonName.collectAsStateWithLifecycle()
     val pokemonInfo by detailsViewModel.pokemonInfo.collectAsStateWithLifecycle()
+
+    ReportDrawnWhen { uiState == DetailsUiState.Idle && pokemonInfo != null }
 
     Column(
         modifier =
@@ -238,20 +240,10 @@ private fun DetailsHeader(
 private fun PokemonHeaderImage(pokemonName: String?, modifier: Modifier) {
     val imageModel =
         if (pokemonName != null) {
-            when (PokedexFeatureFlags.FetchPokemonImagesFromDisk) {
-                true -> {
-                    val context = LocalContext.current
-                    getPokemonImageFileByName(
-                        name = pokemonName,
-                        filesDir = context.filesDir.absolutePath,
-                    )
-                }
-                false ->
-                    getPokemonImageUrlByName(
-                        name = pokemonName,
-                        apiUrl = ModuleLocator.networkModule.baseUrl,
-                    )
-            }
+            getPokemonImageUrlByName(
+                name = pokemonName,
+                apiUrl = ModuleLocator.networkModule.baseUrl,
+            )
         } else null
     if (PokedexFeatureFlags.UseCoil) {
         AsyncImage(
