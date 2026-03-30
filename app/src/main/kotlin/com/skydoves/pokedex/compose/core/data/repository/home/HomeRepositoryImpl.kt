@@ -46,15 +46,15 @@ class HomeRepositoryImpl(
     ) =
         flow {
                 // Start out by fetching cached data
-                emit(pokemonDao.getPokemonList().asPresentationModel(apiUrl, page))
+                val cachedPokemon = pokemonDao.getPokemonList().asPresentationModel(apiUrl)
+                emit(cachedPokemon)
                 // Afterwards, we'll make a request to the API to still get new data
                 val networkPokemonResponse = pokedexClient.fetchPokemonList(page = page)
                 networkPokemonResponse
                     .onSuccess { data ->
                         val networkFetchedPokemons = data.results
                         pokemonDao.insertPokemonList(networkFetchedPokemons.asDatabaseEntity())
-                        // We re-query the database to account for concurrent modifications
-                        emit(pokemonDao.getAllPokemonList().asPresentationModel(apiUrl, page))
+                        emit(pokemonDao.getPokemonList().asPresentationModel(apiUrl))
                     }
                     .onFailure { throwable -> onError(throwable.message) }
             }
