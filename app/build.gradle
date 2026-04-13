@@ -3,15 +3,14 @@ plugins {
     id("AndroidXComposePlugin")
     id("com.google.devtools.ksp")
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
-    id("androidx.room")
+    id("androidx.room") version "2.7.0"
     alias(libs.plugins.kotlinSerialization)
 }
 
 android {
     namespace = "com.skydoves.pokedex.compose"
 
-    compileSdk = 35
+    compileSdk { version = release(35) }
 
     defaultConfig {
         // Propagate the proguard rules to be used by the including app module
@@ -19,14 +18,16 @@ android {
         // We don't export schemas, but Room's Gradle plugin doesn't know that. We use the project
         // directory as a placeholder.
         room {
-            schemaDirectory("$projectDir")
+            schemaDirectory("$projectDir/room_schemas")
         }
     }
-
-    buildFeatures {
-        buildConfig = true
-    }
 }
+
+
+// Create a release build type and make sure it's the only one enabled.
+// This is needed because we benchmark the release build type only.
+android.buildTypes { release {} }
+androidComponents { beforeVariants(selector().all()) { enabled = buildType == 'release' } }
 
 /**
  * Exclusion groups for JetBrains Compose. When a dependency depends on JetBrains Compose, prebuilts
@@ -57,14 +58,14 @@ dependencies {
     implementation(project(":compose:material3:material3"))
     implementation(project(":compose:foundation:foundation"))
     implementation(project(":compose:foundation:foundation-layout"))
-    implementation(project(":compose:integration-tests:hero:hero-common:hero-common-implementation"))
     implementation("androidx.activity:activity-compose:1.9.2")
 
     // AndroidX
     implementation(libs.androidx.core)
-    implementation(libs.testRunner)
-    implementation("androidx.navigation:navigation-compose:2.8.2")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
+    implementation("androidx.navigation:navigation-compose:2.9.7")
+    implementation("androidx.lifecycle:lifecycle-runtime:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
     implementation("androidx.palette:palette:1.0.0")
 
     // Image Loading
@@ -90,13 +91,14 @@ dependencies {
     implementation(libs.kotlinCoroutinesAndroid)
 
     // Database
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-runtime:2.7.0")
+    implementation("androidx.room:room-ktx:2.7.0")
+    ksp("androidx.room:room-compiler:2.7.0")
 
     // Network
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-kotlinx-serialization:2.11.0")
+    api("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     implementation("com.squareup.okhttp3:okhttp-tls:4.12.0")
