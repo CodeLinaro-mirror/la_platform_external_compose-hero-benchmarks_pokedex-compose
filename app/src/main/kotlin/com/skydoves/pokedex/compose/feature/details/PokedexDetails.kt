@@ -157,14 +157,14 @@ private fun DetailsHeader(
                         composeNavigator.navigateUp()
                     },
                 painter = painterResource(id = R.drawable.ic_arrow),
-                tint = PokedexTheme.colors.absoluteWhite,
+                tint = PokedexTheme.colors.absoluteBlack,
                 contentDescription = null,
             )
 
             Text(
                 modifier = Modifier.padding(horizontal = 10.dp),
                 text = pokemonName.orEmpty(),
-                color = PokedexTheme.colors.absoluteWhite,
+                color = PokedexTheme.colors.black,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
             )
@@ -174,7 +174,7 @@ private fun DetailsHeader(
             modifier = Modifier.align(Alignment.TopEnd).padding(12.dp).statusBarsPadding(),
             text = pokemonInfo?.getIdString().orEmpty(),
             previewText = "#001",
-            color = PokedexTheme.colors.absoluteWhite,
+            color = PokedexTheme.colors.black,
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp,
         )
@@ -241,9 +241,10 @@ private fun PokemonHeaderImage(pokemonName: String?, modifier: Modifier) {
     val imageModel =
         if (pokemonName != null) {
             getPokemonImageUrlByName(
-                name = pokemonName,
-                apiUrl = ModuleLocator.networkModule.baseUrl,
-            )
+                    name = pokemonName,
+                    apiUrl = ModuleLocator.networkModule.baseUrl,
+                )
+                .toString()
         } else null
     if (PokedexFeatureFlags.UseCoil) {
         AsyncImage(
