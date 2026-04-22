@@ -20,36 +20,18 @@ import android.annotation.SuppressLint
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.compose.runtime.Immutable
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @SuppressLint("BanParcelableUsage") // TODO(b/374318532): Migrate to VersionedParcelable
 @Immutable
 @Serializable
-data class Pokemon(
-    var page: Int = 0,
-    @SerialName(value = "name") val nameField: String,
-    @SerialName(value = "url") val url: String,
-) : Parcelable {
+data class Pokemon(val name: String, val imageUrl: String) : Parcelable {
 
-    val name: String
-        get() = nameField.replaceFirstChar { it.uppercase() }
-
-    val imageUrl: String
-        inline get() {
-            val index = url.split("/".toRegex()).dropLast(1).last()
-            return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/" +
-                "pokemon/other/official-artwork/$index.png"
-        }
-
-    constructor(
-        parcel: Parcel
-    ) : this(parcel.readInt(), parcel.readString()!!, parcel.readString()!!)
+    constructor(parcel: Parcel) : this(parcel.readString()!!, parcel.readString()!!)
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeInt(page)
-        parcel.writeString(nameField)
-        parcel.writeString(url)
+        parcel.writeString(name)
+        parcel.writeString(imageUrl)
     }
 
     override fun describeContents() = 0

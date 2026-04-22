@@ -32,10 +32,10 @@
 
 package com.skydoves.pokedex.compose.core.network.di
 
-import com.skydoves.pokedex.compose.BuildConfig
 import com.skydoves.pokedex.compose.core.network.service.PokedexClient
 import com.skydoves.pokedex.compose.core.network.service.PokedexService
 import kotlinx.serialization.json.Json
+import okhttp3.HttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -43,22 +43,27 @@ import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 
 class NetworkModule(private val json: Json) {
-    val okHttpClient: OkHttpClient by lazy {
-        OkHttpClient.Builder()
-            .apply {
-                if (BuildConfig.DEBUG) {
-                    this.addNetworkInterceptor(
-                        HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
-                    )
-                }
-            }
+    private var _baseUrl: HttpUrl? = null
+    var baseUrl: HttpUrl
+        get() = _baseUrl ?: error("API url was not provided when starting activity.")
+        set(value) {
+            _baseUrl = value
+        }
+
+    fun okHttpClientFactory(): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addNetworkInterceptor(
+                HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
+            )
             .build()
     }
+
+    val okHttpClient: OkHttpClient by lazy { okHttpClientFactory() }
 
     val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .client(okHttpClient)
-            .baseUrl("https://pokeapi.co/api/v2/")
+            .baseUrl(baseUrl)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
     }

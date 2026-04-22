@@ -16,36 +16,89 @@
 
 package com.skydoves.pokedex.compose.ui
 
+import android.os.Trace
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.LocalOverscrollFactory
+import androidx.compose.foundation.text.LocalBackgroundTextMeasurementExecutor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ProvidedValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
+import coil3.ImageLoader
+import coil3.compose.setSingletonImageLoaderFactory
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import com.skydoves.pokedex.compose.core.PokedexFeatureFlags
 import com.skydoves.pokedex.compose.core.designsystem.theme.PokedexTheme
 import com.skydoves.pokedex.compose.core.navigation.AppComposeNavigator
 import com.skydoves.pokedex.compose.core.navigation.LocalComposeNavigator
 import com.skydoves.pokedex.compose.core.navigation.PokedexComposeNavigator
 import com.skydoves.pokedex.compose.core.navigation.PokedexScreen
+import com.skydoves.pokedex.compose.core.network.di.ModuleLocator
 import com.skydoves.pokedex.compose.navigation.PokedexNavHost
+import java.util.concurrent.Executors
 
 @Composable
 fun PokedexMain(
-    composeNavigator: AppComposeNavigator<PokedexScreen> = remember { PokedexComposeNavigator() }
+    composeNavigator: AppComposeNavigator<PokedexScreen> = remember { PokedexComposeNavigator() },
+    startDestination: PokedexScreen,
 ) {
+    val textMeasurementExecutor =
+        if (PokedexFeatureFlags.UseBackgroundTextPrewarming) {
+            remember {
+                Executors.newSingleThreadExecutor { Thread(it, "ComposeBackgroundTextPrewarmer") }
+            }
+        } else {
+            null
+        }
     PokedexTheme {
-        CompositionLocalProvider(LocalComposeNavigator provides composeNavigator) {
+        var values: Array<ProvidedValue<*>> =
+            arrayOf(
+                LocalComposeNavigator provides composeNavigator,
+                LocalBackgroundTextMeasurementExecutor provides textMeasurementExecutor,
+            )
+        if (PokedexFeatureFlags.DisableOverscrollEffect) {
+            val providedValue = (LocalOverscrollFactory provides null)
+            values += providedValue
+        }
+
+        CompositionLocalProvider(*values) {
             val context = LocalContext.current
             DisposableEffect(context) {
                 (context as? ComponentActivity)?.enableEdgeToEdge()
-                onDispose {}
+                onDispose { ModuleLocator.detach() }
+            }
+            Trace.beginSection("ModuleLocator.attach")
+            ModuleLocator.attach(context = { context })
+            Trace.endSection()
+            if (PokedexFeatureFlags.UseCoil) {
+                ConfigureCoil()
             }
             val navHostController = rememberNavController()
             LaunchedEffect(Unit) { composeNavigator.handleNavigationCommands(navHostController) }
-            PokedexNavHost(navHostController = navHostController)
+            PokedexNavHost(
+                navHostController = navHostController,
+                startDestination = startDestination,
+            )
         }
+    }
+}
+
+@Composable
+private fun ConfigureCoil() {
+    setSingletonImageLoaderFactory { context ->
+        ImageLoader.Builder(context)
+            .components {
+                add(
+                    OkHttpNetworkFetcherFactory(
+                        callFactory = ModuleLocator.networkModule.okHttpClient.newBuilder().build()
+                    )
+                )
+            }
+            .build()
     }
 }

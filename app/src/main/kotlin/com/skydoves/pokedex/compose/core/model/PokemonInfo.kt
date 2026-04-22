@@ -75,15 +75,9 @@ data class PokemonInfo(
         @SerialName(value = "stat") val stat: Stat,
     )
 
-    @Serializable
-    data class Stat(
-        @SerialName(value = "name") val name: String,
-    )
+    @Serializable data class Stat(@SerialName(value = "name") val name: String)
 
-    @Serializable
-    data class Type(
-        @SerialName(value = "name") val name: String,
-    )
+    @Serializable data class Type(@SerialName(value = "name") val name: String)
 
     companion object {
         const val MAX_HP = 300

@@ -19,9 +19,11 @@
 package com.skydoves.pokedex.compose.feature.details
 
 import android.content.res.Configuration
+import androidx.activity.compose.ReportDrawnWhen
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -47,10 +49,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -60,45 +65,56 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.palette.graphics.Palette
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.bumptech.glide.integration.compose.CrossFade
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.placeholder
 import com.skydoves.pokedex.compose.R
+import com.skydoves.pokedex.compose.core.PokedexFeatureFlags
 import com.skydoves.pokedex.compose.core.data.repository.details.FakeDetailsRepository
+import com.skydoves.pokedex.compose.core.database.entitiy.mapper.getPokemonImageUrlByName
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexCircularProgress
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexText
 import com.skydoves.pokedex.compose.core.designsystem.component.pokedexSharedElement
 import com.skydoves.pokedex.compose.core.designsystem.theme.PokedexTheme
 import com.skydoves.pokedex.compose.core.designsystem.utils.getPokemonTypeColor
-import com.skydoves.pokedex.compose.core.model.Pokemon
 import com.skydoves.pokedex.compose.core.model.PokemonInfo
 import com.skydoves.pokedex.compose.core.navigation.boundsTransform
 import com.skydoves.pokedex.compose.core.navigation.currentComposeNavigator
+import com.skydoves.pokedex.compose.core.network.di.ModuleLocator
 import com.skydoves.pokedex.compose.core.preview.PokedexPreviewTheme
 import com.skydoves.pokedex.compose.core.preview.PreviewUtils
-import com.skydoves.pokedex.compose.core.viewmodel.LocalPokedexViewModelFactory
 
 @Composable
 fun PokedexDetails(
-    sharedTransitionScope: SharedTransitionScope,
+    sharedTransitionScope: SharedTransitionScope?,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    detailsViewModel: DetailsViewModel = viewModel(factory = LocalPokedexViewModelFactory.current),
+    detailsViewModel: DetailsViewModel,
 ) {
     val uiState by detailsViewModel.uiState.collectAsStateWithLifecycle()
-    val pokemon by detailsViewModel.pokemon.collectAsStateWithLifecycle()
+    val pokemonName by detailsViewModel.pokemonName.collectAsStateWithLifecycle()
     val pokemonInfo by detailsViewModel.pokemonInfo.collectAsStateWithLifecycle()
+
+    ReportDrawnWhen { uiState == DetailsUiState.Idle && pokemonInfo != null }
 
     Column(
         modifier =
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("PokedexDetails"),
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("PokedexDetails")
     ) {
         DetailsHeader(
             sharedTransitionScope = sharedTransitionScope,
             animatedVisibilityScope = animatedVisibilityScope,
-            pokemon = pokemon,
+            pokemonName = pokemonName,
             pokemonInfo = pokemonInfo,
         )
+        if (sharedTransitionScope != null) {
+            val statusText =
+                "pokedex-details-transition-active-${sharedTransitionScope.isTransitionActive}"
+            Text(statusText, Modifier.semantics { testTag = statusText })
+        }
 
         if (uiState == DetailsUiState.Idle && pokemonInfo != null) {
             DetailsInfo(pokemonInfo = pokemonInfo!!)
@@ -110,23 +126,17 @@ fun PokedexDetails(
     }
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 private fun DetailsHeader(
-    sharedTransitionScope: SharedTransitionScope,
+    sharedTransitionScope: SharedTransitionScope?,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    pokemon: Pokemon?,
+    pokemonName: String?,
     pokemonInfo: PokemonInfo?,
 ) {
     val composeNavigator = currentComposeNavigator
     val palette by remember { mutableStateOf<Palette?>(null) }
     val shape =
-        RoundedCornerShape(
-            topStart = 0.dp,
-            topEnd = 0.dp,
-            bottomStart = 64.dp,
-            bottomEnd = 64.dp,
-        )
+        RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp, bottomStart = 64.dp, bottomEnd = 64.dp)
 
     val backgroundBrush by palette.paletteBackgroundBrush()
 
@@ -135,23 +145,26 @@ private fun DetailsHeader(
             Modifier.fillMaxWidth()
                 .height(290.dp)
                 .shadow(elevation = 9.dp, shape = shape)
-                .background(brush = backgroundBrush, shape = shape),
+                .background(brush = backgroundBrush, shape = shape)
     ) {
         Row(
             modifier = Modifier.padding(12.dp).statusBarsPadding(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                modifier = Modifier.padding(end = 6.dp).clickable { composeNavigator.navigateUp() },
+                modifier =
+                    Modifier.testTag("pokedexDetailsBack").padding(end = 6.dp).clickable {
+                        composeNavigator.navigateUp()
+                    },
                 painter = painterResource(id = R.drawable.ic_arrow),
-                tint = PokedexTheme.colors.absoluteWhite,
+                tint = PokedexTheme.colors.absoluteBlack,
                 contentDescription = null,
             )
 
             Text(
                 modifier = Modifier.padding(horizontal = 10.dp),
-                text = pokemon?.name.orEmpty(),
-                color = PokedexTheme.colors.absoluteWhite,
+                text = pokemonName.orEmpty(),
+                color = PokedexTheme.colors.black,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
             )
@@ -161,31 +174,34 @@ private fun DetailsHeader(
             modifier = Modifier.align(Alignment.TopEnd).padding(12.dp).statusBarsPadding(),
             text = pokemonInfo?.getIdString().orEmpty(),
             previewText = "#001",
-            color = PokedexTheme.colors.absoluteWhite,
+            color = PokedexTheme.colors.black,
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp,
         )
 
-        GlideImage(
+        PokemonHeaderImage(
+            pokemonName,
             modifier =
                 Modifier.align(Alignment.BottomCenter)
                     .padding(bottom = 20.dp)
                     .size(190.dp)
-                    .pokedexSharedElement(
-                        sharedTransitionScope = sharedTransitionScope,
-                        isLocalInspectionMode = LocalInspectionMode.current,
-                        state =
-                            sharedTransitionScope.rememberSharedContentState(
-                                key = "image-${pokemon?.name}"
-                            ),
-                        animatedVisibilityScope = animatedVisibilityScope,
-                        boundsTransform = boundsTransform,
+                    .then(
+                        if (
+                            sharedTransitionScope != null &&
+                                PokedexFeatureFlags.EnableSharedElementTransitions
+                        ) {
+                            Modifier.pokedexSharedElement(
+                                sharedTransitionScope = sharedTransitionScope,
+                                isLocalInspectionMode = LocalInspectionMode.current,
+                                state =
+                                    sharedTransitionScope.rememberSharedContentState(
+                                        key = "image-$pokemonName"
+                                    ),
+                                animatedVisibilityScope = animatedVisibilityScope,
+                                boundsTransform = boundsTransform,
+                            )
+                        } else Modifier
                     ),
-            model = pokemon?.imageUrl,
-            contentScale = ContentScale.Inside,
-            transition = CrossFade,
-            contentDescription = pokemon?.name,
-            loading = placeholder(painterResource(id = R.drawable.pokemon_preview)),
         )
     }
 
@@ -193,23 +209,65 @@ private fun DetailsHeader(
         modifier =
             Modifier.padding(top = 24.dp)
                 .fillMaxWidth()
-                .pokedexSharedElement(
-                    sharedTransitionScope = sharedTransitionScope,
-                    isLocalInspectionMode = LocalInspectionMode.current,
-                    state =
-                        sharedTransitionScope.rememberSharedContentState(
-                            key = "name-${pokemon?.name}"
-                        ),
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    boundsTransform = boundsTransform,
+                .then(
+                    if (
+                        sharedTransitionScope != null &&
+                            PokedexFeatureFlags.EnableSharedElementTransitions
+                    ) {
+                        Modifier.pokedexSharedElement(
+                            sharedTransitionScope = sharedTransitionScope,
+                            isLocalInspectionMode = LocalInspectionMode.current,
+                            state =
+                                sharedTransitionScope.rememberSharedContentState(
+                                    key = "name-$pokemonName"
+                                ),
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            boundsTransform = boundsTransform,
+                        )
+                    } else Modifier
                 ),
-        text = pokemon?.name.orEmpty(),
+        text = pokemonName.orEmpty(),
         previewText = "skydoves",
         color = PokedexTheme.colors.black,
         fontWeight = FontWeight.Bold,
         textAlign = TextAlign.Center,
         fontSize = 36.sp,
     )
+}
+
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+private fun PokemonHeaderImage(pokemonName: String?, modifier: Modifier) {
+    val imageModel =
+        if (pokemonName != null) {
+            getPokemonImageUrlByName(
+                    name = pokemonName,
+                    apiUrl = ModuleLocator.networkModule.baseUrl,
+                )
+                .toString()
+        } else null
+    if (PokedexFeatureFlags.UseCoil) {
+        AsyncImage(
+            modifier = modifier,
+            model =
+                ImageRequest.Builder(LocalContext.current)
+                    .data(imageModel)
+                    .crossfade(PokemonHeaderImageCrossfadeDurationMillis)
+                    .build(),
+            contentDescription = pokemonName,
+            contentScale = ContentScale.Inside,
+            placeholder = painterResource(id = R.drawable.pokemon_preview),
+        )
+    } else {
+        GlideImage(
+            modifier = modifier,
+            model = imageModel,
+            contentScale = ContentScale.Inside,
+            transition = CrossFade(tween(PokemonHeaderImageCrossfadeDurationMillis)),
+            contentDescription = pokemonName,
+            loading = placeholder(painterResource(id = R.drawable.pokemon_preview)),
+        )
+    }
 }
 
 @Composable
@@ -253,9 +311,7 @@ private fun DetailsInfo(pokemonInfo: PokemonInfo) {
 }
 
 @Composable
-private fun DetailsStatus(
-    pokemonInfo: PokemonInfo,
-) {
+private fun DetailsStatus(pokemonInfo: PokemonInfo) {
     Text(
         modifier = Modifier.fillMaxWidth().padding(top = 22.dp, bottom = 16.dp),
         text = stringResource(id = R.string.base_stats),
@@ -284,10 +340,12 @@ private fun PokedexDetailsPreview() {
             sharedTransitionScope = this,
             animatedVisibilityScope = animatedVisibilityScope,
             detailsViewModel =
-                DetailsViewModel(
-                    detailsRepository = FakeDetailsRepository(),
-                    savedStateHandle = SavedStateHandle(),
-                ),
+                viewModel {
+                    DetailsViewModel(
+                        detailsRepository = FakeDetailsRepository(),
+                        savedStateHandle = SavedStateHandle(),
+                    )
+                },
         )
     }
 }
@@ -303,9 +361,7 @@ private fun PokedexDetailsInfoPreview() {
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun PokedexDetailsStatusPreview() {
-    PokedexPreviewTheme {
-        DetailsStatus(
-            pokemonInfo = PreviewUtils.mockPokemonInfo(),
-        )
-    }
+    PokedexPreviewTheme { DetailsStatus(pokemonInfo = PreviewUtils.mockPokemonInfo()) }
 }
+
+private const val PokemonHeaderImageCrossfadeDurationMillis = 250
