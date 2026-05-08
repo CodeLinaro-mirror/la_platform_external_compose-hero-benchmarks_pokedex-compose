@@ -19,6 +19,7 @@
 package com.skydoves.pokedex.compose.feature.details
 
 import android.content.res.Configuration
+import androidx.activity.compose.ReportDrawnWhen
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -83,6 +84,7 @@ import com.skydoves.pokedex.compose.core.designsystem.utils.getPokemonTypeColor
 import com.skydoves.pokedex.compose.core.model.PokemonInfo
 import com.skydoves.pokedex.compose.core.navigation.boundsTransform
 import com.skydoves.pokedex.compose.core.navigation.currentComposeNavigator
+import com.skydoves.pokedex.compose.core.network.di.ModuleLocator
 import com.skydoves.pokedex.compose.core.preview.PokedexPreviewTheme
 import com.skydoves.pokedex.compose.core.preview.PreviewUtils
 
@@ -95,6 +97,8 @@ fun PokedexDetails(
     val uiState by detailsViewModel.uiState.collectAsStateWithLifecycle()
     val pokemonName by detailsViewModel.pokemonName.collectAsStateWithLifecycle()
     val pokemonInfo by detailsViewModel.pokemonInfo.collectAsStateWithLifecycle()
+
+    ReportDrawnWhen { uiState == DetailsUiState.Idle && pokemonInfo != null }
 
     Column(
         modifier =
@@ -153,14 +157,14 @@ private fun DetailsHeader(
                         composeNavigator.navigateUp()
                     },
                 painter = painterResource(id = R.drawable.ic_arrow),
-                tint = PokedexTheme.colors.absoluteWhite,
+                tint = PokedexTheme.colors.absoluteBlack,
                 contentDescription = null,
             )
 
             Text(
                 modifier = Modifier.padding(horizontal = 10.dp),
                 text = pokemonName.orEmpty(),
-                color = PokedexTheme.colors.absoluteWhite,
+                color = PokedexTheme.colors.black,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
             )
@@ -170,7 +174,7 @@ private fun DetailsHeader(
             modifier = Modifier.align(Alignment.TopEnd).padding(12.dp).statusBarsPadding(),
             text = pokemonInfo?.getIdString().orEmpty(),
             previewText = "#001",
-            color = PokedexTheme.colors.absoluteWhite,
+            color = PokedexTheme.colors.black,
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp,
         )
@@ -234,16 +238,20 @@ private fun DetailsHeader(
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 private fun PokemonHeaderImage(pokemonName: String?, modifier: Modifier) {
-    val pokemonImageUrl =
+    val imageModel =
         if (pokemonName != null) {
-            getPokemonImageUrlByName(pokemonName).toString()
+            getPokemonImageUrlByName(
+                    name = pokemonName,
+                    apiUrl = ModuleLocator.networkModule.baseUrl,
+                )
+                .toString()
         } else null
     if (PokedexFeatureFlags.UseCoil) {
         AsyncImage(
             modifier = modifier,
             model =
                 ImageRequest.Builder(LocalContext.current)
-                    .data(pokemonImageUrl)
+                    .data(imageModel)
                     .crossfade(PokemonHeaderImageCrossfadeDurationMillis)
                     .build(),
             contentDescription = pokemonName,
@@ -253,7 +261,7 @@ private fun PokemonHeaderImage(pokemonName: String?, modifier: Modifier) {
     } else {
         GlideImage(
             modifier = modifier,
-            model = pokemonImageUrl,
+            model = imageModel,
             contentScale = ContentScale.Inside,
             transition = CrossFade(tween(PokemonHeaderImageCrossfadeDurationMillis)),
             contentDescription = pokemonName,
