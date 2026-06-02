@@ -62,4 +62,7 @@ object PokedexFeatureFlags {
      * the list. We disable overscroll by default to stabilize benchmark results.
      */
     var DisableOverscrollEffect = true
+
+    /** Whether to enable the scrollbar modifier on the list. */
+    var EnableScrollbar = true
 }
