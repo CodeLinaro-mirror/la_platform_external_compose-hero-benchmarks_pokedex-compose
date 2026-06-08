@@ -16,7 +16,6 @@
 
 package com.skydoves.pokedex.compose.ui
 
-import android.os.Trace
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.LocalOverscrollFactory
@@ -24,29 +23,24 @@ import androidx.compose.foundation.text.LocalBackgroundTextMeasurementExecutor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ProvidedValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
-import androidx.navigation.compose.rememberNavController
+import androidx.compose.ui.util.trace
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import com.skydoves.pokedex.compose.core.PokedexFeatureFlags
 import com.skydoves.pokedex.compose.core.designsystem.theme.PokedexTheme
-import com.skydoves.pokedex.compose.core.navigation.AppComposeNavigator
 import com.skydoves.pokedex.compose.core.navigation.LocalComposeNavigator
-import com.skydoves.pokedex.compose.core.navigation.PokedexComposeNavigator
 import com.skydoves.pokedex.compose.core.navigation.PokedexScreen
+import com.skydoves.pokedex.compose.core.navigation.rememberPokedexComposeNavigator
 import com.skydoves.pokedex.compose.core.network.di.ModuleLocator
-import com.skydoves.pokedex.compose.navigation.PokedexNavHost
+import com.skydoves.pokedex.compose.navigation.PokedexNavDisplay
 import java.util.concurrent.Executors
 
 @Composable
-fun PokedexMain(
-    composeNavigator: AppComposeNavigator<PokedexScreen> = remember { PokedexComposeNavigator() },
-    startDestination: PokedexScreen,
-) {
+fun PokedexMain(startDestination: PokedexScreen) {
     val textMeasurementExecutor =
         if (PokedexFeatureFlags.UseBackgroundTextPrewarming) {
             remember {
@@ -55,10 +49,11 @@ fun PokedexMain(
         } else {
             null
         }
+    val navigator = rememberPokedexComposeNavigator(startDestination)
     PokedexTheme {
         var values: Array<ProvidedValue<*>> =
             arrayOf(
-                LocalComposeNavigator provides composeNavigator,
+                LocalComposeNavigator provides navigator,
                 LocalBackgroundTextMeasurementExecutor provides textMeasurementExecutor,
             )
         if (PokedexFeatureFlags.DisableOverscrollEffect) {
@@ -72,18 +67,11 @@ fun PokedexMain(
                 (context as? ComponentActivity)?.enableEdgeToEdge()
                 onDispose { ModuleLocator.detach() }
             }
-            Trace.beginSection("ModuleLocator.attach")
-            ModuleLocator.attach(context = { context })
-            Trace.endSection()
+            trace("ModuleLocator.attach") { ModuleLocator.attach(context = { context }) }
             if (PokedexFeatureFlags.UseCoil) {
                 ConfigureCoil()
             }
-            val navHostController = rememberNavController()
-            LaunchedEffect(Unit) { composeNavigator.handleNavigationCommands(navHostController) }
-            PokedexNavHost(
-                navHostController = navHostController,
-                startDestination = startDestination,
-            )
+            PokedexNavDisplay(backStack = navigator.backStack)
         }
     }
 }
