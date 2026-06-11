@@ -16,6 +16,8 @@
 
 package com.skydoves.pokedex.compose.core
 
+import com.skydoves.pokedex.compose.core.PokedexFeatureFlags.EnableSharedTransitionScope
+
 /** Contains feature flags for the Pokedex hero benchmark target */
 object PokedexFeatureFlags {
     /**
@@ -24,10 +26,43 @@ object PokedexFeatureFlags {
      */
     var UseCoil = true
 
+    /**
+     * Whether [androidx.compose.animation.SharedTransitionScope] should be used or replaced by
+     * simpler layouts instead. If false, shared element transitions will be off too.
+     */
     var EnableSharedTransitionScope = true
 
+    /**
+     * Whether to enable shared element transitions between the activities.
+     * [EnableSharedTransitionScope] must be set to true, otherwise this flag will be false.
+     */
     var EnableSharedElementTransitions = true
-        set(value) {
-            field = EnableSharedTransitionScope && value
-        }
+        get() = EnableSharedTransitionScope && field
+
+    /**
+     * Whether to initiate loading of data through launching coroutine directly on initial
+     * composition. If disabled, falls back to `collectStateWithLifecycle`, which has an extra frame
+     * delay when subscribing to the flow.
+     */
+    var UseLifecycleEffectForDataLoadingOnStartup = false
+
+    /**
+     * Whether to use background text prewarming.
+     *
+     * See [androidx.compose.foundation.text.LocalBackgroundTextMeasurementExecutor].
+     */
+    var UseBackgroundTextPrewarming = false
+
+    /**
+     * Whether to explicitly disable the overscroll effect for the hierarchy. Overscroll relies on
+     * shaders on newer API levels, which need to be compiled. In benchmarks, we kill the shader
+     * cache, which means that we incur a significant cost when initially compiling the shader.
+     *
+     * Inconsistencies in adb input injection mean that we sometimes end up hitting the bounds of
+     * the list. We disable overscroll by default to stabilize benchmark results.
+     */
+    var DisableOverscrollEffect = true
+
+    /** Whether to enable the scrollbar modifier on the list. */
+    var EnableScrollbar = true
 }

@@ -1,19 +1,16 @@
-import androidx.build.KotlinTarget
-
 plugins {
     id("AndroidXPlugin")
     id("AndroidXComposePlugin")
     id("com.google.devtools.ksp")
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
-    id("androidx.room")
+    id("androidx.room") version "2.7.0"
     alias(libs.plugins.kotlinSerialization)
 }
 
 android {
     namespace = "com.skydoves.pokedex.compose"
 
-    compileSdk = 35
+    compileSdk { version = release(37) }
 
     defaultConfig {
         // Propagate the proguard rules to be used by the including app module
@@ -61,12 +58,14 @@ dependencies {
     implementation(project(":compose:material3:material3"))
     implementation(project(":compose:foundation:foundation"))
     implementation(project(":compose:foundation:foundation-layout"))
-    implementation(project(":compose:integration-tests:hero:hero-common:hero-common-implementation"))
     implementation("androidx.activity:activity-compose:1.9.2")
 
     // AndroidX
     implementation(libs.androidx.core)
-    implementation("androidx.navigation:navigation-compose:2.7.7")
+    // navigation3-runtime is exported as api because PokedexScreen implements NavKey
+    api(project(":navigation3:navigation3-runtime"))
+    implementation(project(":navigation3:navigation3-ui"))
+    implementation(project(":lifecycle:lifecycle-viewmodel-navigation3"))
     implementation("androidx.lifecycle:lifecycle-runtime:2.6.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
@@ -95,10 +94,9 @@ dependencies {
     implementation(libs.kotlinCoroutinesAndroid)
 
     // Database
-    // TODO: Update to Room 2.7.0 stable once released (b/407725691)
-    implementation("androidx.room:room-runtime:2.7.0-rc03")
-    implementation("androidx.room:room-ktx:2.7.0-rc03")
-    ksp("androidx.room:room-compiler:2.7.0-rc03")
+    implementation("androidx.room:room-runtime:2.7.0")
+    implementation("androidx.room:room-ktx:2.7.0")
+    ksp("androidx.room:room-compiler:2.7.0")
 
     // Network
     implementation("com.squareup.retrofit2:retrofit:2.11.0")

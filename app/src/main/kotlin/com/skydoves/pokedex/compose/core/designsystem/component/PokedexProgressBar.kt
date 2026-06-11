@@ -49,6 +49,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.skydoves.pokedex.compose.core.designsystem.theme.PokedexTheme
+import com.skydoves.pokedex.compose.core.designsystem.utils.TraceAsync
 import com.skydoves.pokedex.compose.core.designsystem.utils.pxToDp
 
 @Suppress("ConfigurationScreenWidthHeight")
@@ -91,6 +92,9 @@ fun PokedexProgressBar(
             }
 
         var animationRunning by remember { mutableStateOf(true) }
+        if (animationRunning) {
+            TraceAsync("PokedexProgressBar Animation (label = $label)")
+        }
         Box(Modifier.size(1.dp).testTag("progress-animation-active-$animationRunning"))
         val animation: Float by
             animateFloatAsState(
