@@ -26,6 +26,7 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,6 +42,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.scrollbar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -97,12 +99,25 @@ fun PokedexDetails(
     val uiState by detailsViewModel.uiState.collectAsStateWithLifecycle()
     val pokemonName by detailsViewModel.pokemonName.collectAsStateWithLifecycle()
     val pokemonInfo by detailsViewModel.pokemonInfo.collectAsStateWithLifecycle()
+    val scrollState = rememberScrollState()
 
     ReportDrawnWhen { uiState == DetailsUiState.Idle && pokemonInfo != null }
 
     Column(
         modifier =
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("PokedexDetails")
+            Modifier.fillMaxSize()
+                .then(
+                    if (PokedexFeatureFlags.EnableScrollbar) {
+                        Modifier.scrollbar(
+                            state = scrollState.scrollIndicatorState,
+                            orientation = Orientation.Vertical,
+                        )
+                    } else {
+                        Modifier
+                    }
+                )
+                .verticalScroll(scrollState)
+                .testTag("PokedexDetails")
     ) {
         DetailsHeader(
             sharedTransitionScope = sharedTransitionScope,
@@ -157,14 +172,14 @@ private fun DetailsHeader(
                         composeNavigator.navigateUp()
                     },
                 painter = painterResource(id = R.drawable.ic_arrow),
-                tint = PokedexTheme.colors.absoluteWhite,
+                tint = PokedexTheme.colors.absoluteBlack,
                 contentDescription = null,
             )
 
             Text(
                 modifier = Modifier.padding(horizontal = 10.dp),
                 text = pokemonName.orEmpty(),
-                color = PokedexTheme.colors.absoluteWhite,
+                color = PokedexTheme.colors.black,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
             )
@@ -174,7 +189,7 @@ private fun DetailsHeader(
             modifier = Modifier.align(Alignment.TopEnd).padding(12.dp).statusBarsPadding(),
             text = pokemonInfo?.getIdString().orEmpty(),
             previewText = "#001",
-            color = PokedexTheme.colors.absoluteWhite,
+            color = PokedexTheme.colors.black,
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp,
         )
@@ -241,9 +256,10 @@ private fun PokemonHeaderImage(pokemonName: String?, modifier: Modifier) {
     val imageModel =
         if (pokemonName != null) {
             getPokemonImageUrlByName(
-                name = pokemonName,
-                apiUrl = ModuleLocator.networkModule.baseUrl,
-            )
+                    name = pokemonName,
+                    apiUrl = ModuleLocator.networkModule.baseUrl,
+                )
+                .toString()
         } else null
     if (PokedexFeatureFlags.UseCoil) {
         AsyncImage(
