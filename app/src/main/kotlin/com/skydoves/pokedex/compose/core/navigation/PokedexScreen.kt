@@ -32,30 +32,12 @@
 
 package com.skydoves.pokedex.compose.core.navigation
 
+import androidx.navigation3.runtime.NavKey
 import com.skydoves.pokedex.compose.core.model.Pokemon
-import kotlin.reflect.typeOf
 import kotlinx.serialization.Serializable
 
-sealed interface PokedexScreen {
-    fun asRoute(): String
+sealed interface PokedexScreen : NavKey {
+    @Serializable object Home : PokedexScreen
 
-    @Serializable
-    object Home : PokedexScreen {
-        const val NAVIGATION_ROUTE = "home"
-
-        override fun asRoute() = NAVIGATION_ROUTE
-    }
-
-    @Serializable
-    data class Details(val pokemon: Pokemon) : PokedexScreen {
-        override fun asRoute() = createRoute(pokemon.name)
-
-        companion object {
-            const val NAVIGATION_ROUTE = "pokemon/{name}/"
-
-            fun createRoute(name: String) = "pokemon/$name/"
-
-            val typeMap = mapOf(typeOf<Pokemon>() to PokemonType)
-        }
-    }
+    @Serializable data class Details(val pokemon: Pokemon) : PokedexScreen
 }
