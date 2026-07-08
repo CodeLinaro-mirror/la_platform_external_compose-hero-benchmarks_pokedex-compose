@@ -100,22 +100,20 @@ fun PokedexDetails(
     val pokemonName by detailsViewModel.pokemonName.collectAsStateWithLifecycle()
     val pokemonInfo by detailsViewModel.pokemonInfo.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
+    val scrollIndicatorState = scrollState.scrollIndicatorState
+    val scrollbarModifier =
+        if (PokedexFeatureFlags.EnableScrollbar && scrollIndicatorState != null) {
+            Modifier.scrollbar(state = scrollIndicatorState, orientation = Orientation.Vertical)
+        } else {
+            Modifier
+        }
 
     ReportDrawnWhen { uiState == DetailsUiState.Idle && pokemonInfo != null }
 
     Column(
         modifier =
             Modifier.fillMaxSize()
-                .then(
-                    if (PokedexFeatureFlags.EnableScrollbar) {
-                        Modifier.scrollbar(
-                            state = scrollState.scrollIndicatorState,
-                            orientation = Orientation.Vertical,
-                        )
-                    } else {
-                        Modifier
-                    }
-                )
+                .then(scrollbarModifier)
                 .verticalScroll(scrollState)
                 .testTag("PokedexDetails")
     ) {

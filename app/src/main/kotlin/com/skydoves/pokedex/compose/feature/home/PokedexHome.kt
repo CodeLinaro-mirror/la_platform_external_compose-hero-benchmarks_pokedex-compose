@@ -152,22 +152,19 @@ private fun HomeContent(
                 }
         }
 
+        val scrollIndicatorState = gridState.scrollIndicatorState
+        val scrollbarModifier =
+            if (PokedexFeatureFlags.EnableScrollbar && scrollIndicatorState != null) {
+                Modifier.scrollbar(state = scrollIndicatorState, orientation = Orientation.Vertical)
+            } else {
+                Modifier
+            }
+
         ReportDrawnWhen { pokemonList.isNotEmpty() }
 
         LazyVerticalGrid(
             state = gridState,
-            modifier =
-                Modifier.testTag("PokedexList")
-                    .then(
-                        if (PokedexFeatureFlags.EnableScrollbar) {
-                            Modifier.scrollbar(
-                                state = gridState.scrollIndicatorState,
-                                orientation = Orientation.Vertical,
-                            )
-                        } else {
-                            Modifier
-                        }
-                    ),
+            modifier = Modifier.testTag("PokedexList").then(scrollbarModifier),
             columns = GridCells.Fixed(2),
             contentPadding = PaddingValues(6.dp),
         ) {
