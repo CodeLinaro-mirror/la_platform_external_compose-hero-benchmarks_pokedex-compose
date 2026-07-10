@@ -42,7 +42,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.scrollbar
+import androidx.compose.material3.nonInteractiveScrollbar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -155,7 +155,10 @@ private fun HomeContent(
         val scrollIndicatorState = gridState.scrollIndicatorState
         val scrollbarModifier =
             if (PokedexFeatureFlags.EnableScrollbar && scrollIndicatorState != null) {
-                Modifier.scrollbar(state = scrollIndicatorState, orientation = Orientation.Vertical)
+                Modifier.nonInteractiveScrollbar(
+                    state = scrollIndicatorState,
+                    orientation = Orientation.Vertical,
+                )
             } else {
                 Modifier
             }

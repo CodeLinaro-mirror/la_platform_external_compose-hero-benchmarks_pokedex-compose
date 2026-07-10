@@ -42,7 +42,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.scrollbar
+import androidx.compose.material3.nonInteractiveScrollbar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -103,7 +103,10 @@ fun PokedexDetails(
     val scrollIndicatorState = scrollState.scrollIndicatorState
     val scrollbarModifier =
         if (PokedexFeatureFlags.EnableScrollbar && scrollIndicatorState != null) {
-            Modifier.scrollbar(state = scrollIndicatorState, orientation = Orientation.Vertical)
+            Modifier.nonInteractiveScrollbar(
+                state = scrollIndicatorState,
+                orientation = Orientation.Vertical,
+            )
         } else {
             Modifier
         }
