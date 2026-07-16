@@ -42,7 +42,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.scrollbar
+import androidx.compose.material3.nonInteractiveScrollbar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -152,22 +152,22 @@ private fun HomeContent(
                 }
         }
 
+        val scrollIndicatorState = gridState.scrollIndicatorState
+        val scrollbarModifier =
+            if (PokedexFeatureFlags.EnableScrollbar && scrollIndicatorState != null) {
+                Modifier.nonInteractiveScrollbar(
+                    state = scrollIndicatorState,
+                    orientation = Orientation.Vertical,
+                )
+            } else {
+                Modifier
+            }
+
         ReportDrawnWhen { pokemonList.isNotEmpty() }
 
         LazyVerticalGrid(
             state = gridState,
-            modifier =
-                Modifier.testTag("PokedexList")
-                    .then(
-                        if (PokedexFeatureFlags.EnableScrollbar) {
-                            Modifier.scrollbar(
-                                state = gridState.scrollIndicatorState,
-                                orientation = Orientation.Vertical,
-                            )
-                        } else {
-                            Modifier
-                        }
-                    ),
+            modifier = Modifier.testTag("PokedexList").then(scrollbarModifier),
             columns = GridCells.Fixed(2),
             contentPadding = PaddingValues(6.dp),
         ) {
