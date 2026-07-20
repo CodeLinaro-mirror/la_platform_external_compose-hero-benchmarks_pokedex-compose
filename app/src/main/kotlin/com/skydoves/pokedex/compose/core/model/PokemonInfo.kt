@@ -75,15 +75,9 @@ data class PokemonInfo(
         @SerialName(value = "stat") val stat: Stat,
     )
 
-    @Serializable
-    data class Stat(
-        @SerialName(value = "name") val name: String,
-    )
+    @Serializable data class Stat(@SerialName(value = "name") val name: String)
 
-    @Serializable
-    data class Type(
-        @SerialName(value = "name") val name: String,
-    )
+    @Serializable data class Type(@SerialName(value = "name") val name: String)
 
     companion object {
         const val MAX_HP = 300
@@ -93,51 +87,3 @@ data class PokemonInfo(
         const val MAX_EXP = 1000
     }
 }
-
-fun fakePokemonInfo(id: Int, name: String): PokemonInfo {
-    val random = Random(name.hashCode())
-    return PokemonInfo(
-        id = id,
-        name = name,
-        height = random.nextInt(10, 50),
-        weight = random.nextInt(80, 300),
-        experience = random.nextInt(0, 100),
-        types = listOf(FakePokemonTypeResponse(random)),
-        stats = listOf(fakePokemonStats(random))
-    )
-}
-
-var FakePokemonStats = listOf("hp", "attack", "speed", "defense")
-
-fun fakePokemonStats(random: Random = Random): PokemonInfo.StatsResponse {
-    val stat = PokemonInfo.Stat(FakePokemonStats.random())
-    val statMax =
-        when (stat.name) {
-            "hp" -> PokemonInfo.MAX_HP
-            "attack" -> PokemonInfo.MAX_ATTACK
-            "speed" -> PokemonInfo.MAX_SPEED
-            "defense" -> PokemonInfo.MAX_DEFENSE
-            else -> 100
-        }
-    return PokemonInfo.StatsResponse(
-        baseStat = random.nextInt(until = statMax),
-        effort = random.nextInt(),
-        stat = stat
-    )
-}
-
-var FakePokemonTypes =
-    listOf(
-        "A slow one",
-        "A fast one",
-        "A big one",
-        "An adorable one",
-        "A tiny one",
-        "A software-developing one"
-    )
-
-fun FakePokemonTypeResponse(random: Random = Random) =
-    PokemonInfo.TypeResponse(
-        slot = 0,
-        type = PokemonInfo.Type(name = FakePokemonTypes.random(random)),
-    )
