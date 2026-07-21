@@ -16,6 +16,7 @@
 
 package com.skydoves.pokedex.compose.navigation
 
+import android.os.Bundle
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -24,47 +25,64 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
+import androidx.lifecycle.DEFAULT_ARGS_KEY
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.defaultViewModelCreationExtras
+import androidx.lifecycle.viewmodel.CreationExtras
+import androidx.lifecycle.viewmodel.MutableCreationExtras
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.skydoves.pokedex.compose.core.designsystem.utils.TraceAsync
 import com.skydoves.pokedex.compose.core.navigation.PokedexScreen
 import com.skydoves.pokedex.compose.feature.details.PokedexDetails
 import com.skydoves.pokedex.compose.feature.home.PokedexHome
 
 @OptIn(ExperimentalSharedTransitionApi::class)
-fun NavGraphBuilder.pokedexNavigation(
+fun pokedexNavigation(
     sharedTransitionScope: SharedTransitionScope?,
     viewModelFactory: ViewModelProvider.Factory,
-) {
-    composable(PokedexScreen.Home.NAVIGATION_ROUTE) {
-        TrackTransitionStatus("home")
-        if (this.transition.isRunning) {
+): (PokedexScreen) -> NavEntry<PokedexScreen> = entryProvider {
+    entry<PokedexScreen.Home> {
+        val animatedContentScope = LocalNavAnimatedContentScope.current
+        animatedContentScope.TrackTransitionStatus("home")
+        val isTransitionRunning = animatedContentScope.transition.isRunning
+        if (isTransitionRunning) {
             TraceAsync("Pokedex Home Navigation Transition")
         }
         PokedexHome(
             sharedTransitionScope = sharedTransitionScope,
-            animatedVisibilityScope = this@composable,
+            animatedVisibilityScope = animatedContentScope,
             homeViewModel = viewModel(factory = viewModelFactory),
         )
     }
 
-    composable(PokedexScreen.Details.NAVIGATION_ROUTE) { backStackEntry ->
-        TrackTransitionStatus("details")
-        if (this.transition.isRunning) {
+    entry<PokedexScreen.Details> { detailsKey ->
+        val animatedContentScope = LocalNavAnimatedContentScope.current
+        animatedContentScope.TrackTransitionStatus("details")
+        val isTransitionRunning = animatedContentScope.transition.isRunning
+        if (isTransitionRunning) {
             TraceAsync("Pokedex Details Navigation Transition")
         }
+        val defaultExtras =
+            LocalViewModelStoreOwner.current?.defaultViewModelCreationExtras ?: CreationExtras.Empty
+        val extras =
+            MutableCreationExtras(defaultExtras).apply {
+                set(DEFAULT_ARGS_KEY, Bundle().apply { putString("name", detailsKey.pokemon.name) })
+            }
         PokedexDetails(
             sharedTransitionScope = sharedTransitionScope,
-            animatedVisibilityScope = this@composable,
-            detailsViewModel = viewModel(factory = viewModelFactory),
+            animatedVisibilityScope = animatedContentScope,
+            detailsViewModel = viewModel(factory = viewModelFactory, extras = extras),
         )
     }
 }
 
 @Composable
 private fun AnimatedContentScope.TrackTransitionStatus(tag: String) {
-    val status = "pokedex-$tag-transition-active-${this@TrackTransitionStatus.transition.isRunning}"
+    val isRunning = this@TrackTransitionStatus.transition.isRunning
+    val status = "pokedex-$tag-transition-active-$isRunning"
     Text(text = status, Modifier.semantics { testTag = status })
 }
