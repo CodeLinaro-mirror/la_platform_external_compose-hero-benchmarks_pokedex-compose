@@ -19,12 +19,14 @@
 package com.skydoves.pokedex.compose.feature.home
 
 import android.content.res.Configuration
+import androidx.activity.compose.ReportDrawnWhen
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -40,11 +42,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.nonInteractiveScrollbar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,6 +64,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.palette.graphics.Palette
@@ -73,6 +78,7 @@ import com.bumptech.glide.integration.compose.placeholder
 import com.skydoves.pokedex.compose.R
 import com.skydoves.pokedex.compose.core.PokedexFeatureFlags
 import com.skydoves.pokedex.compose.core.data.repository.home.FakeHomeRepository
+import com.skydoves.pokedex.compose.core.database.entitiy.mapper.getPokemonImageUrlByName
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexAppBar
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexCircularProgress
 import com.skydoves.pokedex.compose.core.designsystem.component.pokedexSharedElement
@@ -85,6 +91,8 @@ import com.skydoves.pokedex.compose.core.preview.PokedexPreviewTheme
 import com.skydoves.pokedex.compose.core.preview.PreviewUtils
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 @Composable
 fun PokedexHome(
@@ -93,7 +101,18 @@ fun PokedexHome(
     homeViewModel: HomeViewModel,
 ) {
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
-    val pokemonList by homeViewModel.pokemonList.collectAsStateWithLifecycle()
+    val pokemonList by
+        if (PokedexFeatureFlags.UseLifecycleEffectForDataLoadingOnStartup) {
+            val scope = rememberCoroutineScope()
+            val pokemonList = remember { mutableStateOf(emptyList<Pokemon>()) }
+            LifecycleStartEffect(scope) {
+                scope.launch { homeViewModel.pokemonList.collect { pokemonList.value = it } }
+                onStopOrDispose { scope.cancel() }
+            }
+            pokemonList
+        } else {
+            homeViewModel.pokemonList.collectAsStateWithLifecycle()
+        }
 
     Column(modifier = Modifier.fillMaxSize()) {
         PokedexAppBar()
@@ -132,9 +151,23 @@ private fun HomeContent(
                     }
                 }
         }
+
+        val scrollIndicatorState = gridState.scrollIndicatorState
+        val scrollbarModifier =
+            if (PokedexFeatureFlags.EnableScrollbar && scrollIndicatorState != null) {
+                Modifier.nonInteractiveScrollbar(
+                    state = scrollIndicatorState,
+                    orientation = Orientation.Vertical,
+                )
+            } else {
+                Modifier
+            }
+
+        ReportDrawnWhen { pokemonList.isNotEmpty() }
+
         LazyVerticalGrid(
             state = gridState,
-            modifier = Modifier.testTag("PokedexList"),
+            modifier = Modifier.testTag("PokedexList").then(scrollbarModifier),
             columns = GridCells.Fixed(2),
             contentPadding = PaddingValues(6.dp),
         ) {
@@ -238,13 +271,14 @@ private fun PokemonCard(
 @Composable
 @OptIn(ExperimentalGlideComposeApi::class)
 private fun PokemonCardImage(pokemon: Pokemon, modifier: Modifier = Modifier) {
+    val imageModel = getPokemonImageUrlByName(pokemon.name).toString()
     if (PokedexFeatureFlags.UseCoil) {
         AsyncImage(
             modifier = modifier,
             contentDescription = pokemon.name,
             model =
                 ImageRequest.Builder(LocalContext.current)
-                    .data(pokemon.imageUrl)
+                    .data(imageModel)
                     .crossfade(PokemonCardImageCrossfadeDurationMillis)
                     .build(),
             contentScale = ContentScale.Inside,
@@ -254,7 +288,7 @@ private fun PokemonCardImage(pokemon: Pokemon, modifier: Modifier = Modifier) {
         GlideImage(
             modifier = modifier,
             contentDescription = pokemon.name,
-            model = pokemon.imageUrl,
+            model = imageModel,
             contentScale = ContentScale.Inside,
             transition = CrossFade(tween(PokemonCardImageCrossfadeDurationMillis)),
             loading = placeholder(painterResource(id = R.drawable.pokemon_preview)),
@@ -296,5 +330,5 @@ private fun HomeContentPreview() {
     }
 }
 
-private const val PaginationBufferSize = 48
+private const val PaginationBufferSize = 8
 private const val PokemonCardImageCrossfadeDurationMillis = 250
