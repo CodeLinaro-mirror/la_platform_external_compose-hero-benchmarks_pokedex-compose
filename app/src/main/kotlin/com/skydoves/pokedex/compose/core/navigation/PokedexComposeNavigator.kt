@@ -16,36 +16,49 @@
 
 package com.skydoves.pokedex.compose.core.navigation
 
-import androidx.navigation.NavOptionsBuilder
-import androidx.navigation.navOptions
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSerializable
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.serialization.NavBackStackSerializer
+import androidx.navigation3.runtime.serialization.NavKeySerializer
 
-class PokedexComposeNavigator : AppComposeNavigator<PokedexScreen>() {
+@Composable
+fun rememberPokedexComposeNavigator(startDestination: PokedexScreen): PokedexComposeNavigator {
+    // rememberNavBackStack doesn't accept a generic nav key type, so we have our own small
+    // version of it that gives us a NavBackStack<PokedexScreen>.
+    val backStack: NavBackStack<PokedexScreen> =
+        rememberSerializable(serializer = NavBackStackSerializer(NavKeySerializer())) {
+            NavBackStack(startDestination)
+        }
+    return remember(backStack) { PokedexComposeNavigator(backStack) }
+}
 
-    override fun navigate(route: PokedexScreen, optionsBuilder: (NavOptionsBuilder.() -> Unit)?) {
-        val options = optionsBuilder?.let { navOptions(it) }
-        navigationCommands.tryEmit(ComposeNavigationCommand.NavigateToRoute(route, options))
+class PokedexComposeNavigator(override val backStack: NavBackStack<PokedexScreen>) :
+    AppComposeNavigator<PokedexScreen>() {
+
+    override fun navigate(route: PokedexScreen) {
+        backStack.add(route)
     }
 
     override fun navigateAndClearBackStack(route: PokedexScreen) {
-        navigationCommands.tryEmit(
-            ComposeNavigationCommand.NavigateToRoute(
-                route,
-                navOptions { popUpTo(0) },
-            ),
-        )
+        backStack.clear()
+        backStack.add(route)
     }
 
     override fun popUpTo(route: PokedexScreen, inclusive: Boolean) {
-        navigationCommands.tryEmit(ComposeNavigationCommand.PopUpToRoute(route, inclusive))
+        val index = backStack.indexOf(route)
+        if (index != -1) {
+            val fromIndex = if (inclusive) index else index + 1
+            while (backStack.size > fromIndex) {
+                backStack.removeAt(backStack.lastIndex)
+            }
+        }
     }
 
-    override fun <R> navigateBackWithResult(key: String, result: R, route: PokedexScreen?) {
-        navigationCommands.tryEmit(
-            ComposeNavigationCommand.NavigateUpWithResult(
-                key = key,
-                result = result,
-                route = route,
-            ),
-        )
+    override fun navigateUp() {
+        if (backStack.size > 1) {
+            backStack.removeAt(backStack.lastIndex)
+        }
     }
 }
