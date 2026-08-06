@@ -24,15 +24,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import com.skydoves.pokedex.compose.core.designsystem.theme.PokedexTheme
 import com.skydoves.pokedex.compose.core.navigation.LocalComposeNavigator
-import com.skydoves.pokedex.compose.core.navigation.PokedexComposeNavigator
+import com.skydoves.pokedex.compose.core.navigation.PokedexScreen
+import com.skydoves.pokedex.compose.core.navigation.rememberPokedexComposeNavigator
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun PokedexPreviewTheme(
-    content: @Composable SharedTransitionScope.(AnimatedVisibilityScope) -> Unit,
+    content: @Composable SharedTransitionScope.(AnimatedVisibilityScope) -> Unit
 ) {
     CompositionLocalProvider(
-        LocalComposeNavigator provides PokedexComposeNavigator(),
+        LocalComposeNavigator provides rememberPokedexComposeNavigator(PokedexScreen.Home)
     ) {
         PokedexTheme {
             SharedTransitionScope { modifier ->
