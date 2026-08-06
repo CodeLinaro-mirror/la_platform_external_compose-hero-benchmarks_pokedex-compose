@@ -32,17 +32,12 @@
 
 package com.skydoves.pokedex.compose.core.navigation
 
+import androidx.navigation3.runtime.NavKey
 import com.skydoves.pokedex.compose.core.model.Pokemon
-import kotlin.reflect.typeOf
 import kotlinx.serialization.Serializable
 
-sealed interface PokedexScreen {
+sealed interface PokedexScreen : NavKey {
     @Serializable object Home : PokedexScreen
 
-    @Serializable
-    data class Details(val pokemon: Pokemon) : PokedexScreen {
-        companion object {
-            val typeMap = mapOf(typeOf<Pokemon>() to PokemonType)
-        }
-    }
+    @Serializable data class Details(val pokemon: Pokemon) : PokedexScreen
 }
