@@ -27,7 +27,7 @@ android {
 // Create a release build type and make sure it's the only one enabled.
 // This is needed because we benchmark the release build type only.
 android.buildTypes { release {} }
-androidComponents { beforeVariants(selector().all()) { enabled = buildType == 'release' } }
+androidComponents { beforeVariants(selector().all()) { enabled = buildType == "release" } }
 
 /**
  * Exclusion groups for JetBrains Compose. When a dependency depends on JetBrains Compose, prebuilts
@@ -38,14 +38,14 @@ androidComponents { beforeVariants(selector().all()) { enabled = buildType == 'r
  * classpath.
  */
 def jetbrainsComposeExcludeGroups = [
-        'org.jetbrains.androidx.lifecycle',
-        'org.jetbrains.compose.animation',
-        'org.jetbrains.compose.annotation-internal',
-        'org.jetbrains.compose.collection-internal',
-        'org.jetbrains.compose.foundation',
-        'org.jetbrains.compose.runtime',
-        'org.jetbrains.compose.ui',
-        'org.jetbrains.skiko'
+        "org.jetbrains.androidx.lifecycle",
+        "org.jetbrains.compose.animation",
+        "org.jetbrains.compose.annotation-internal",
+        "org.jetbrains.compose.collection-internal",
+        "org.jetbrains.compose.foundation",
+        "org.jetbrains.compose.runtime",
+        "org.jetbrains.compose.ui",
+        "org.jetbrains.skiko"
 ]
 
 dependencies {
