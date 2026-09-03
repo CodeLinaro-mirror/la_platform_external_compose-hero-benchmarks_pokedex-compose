@@ -87,6 +87,7 @@ class ViewModelStateFlow<T>(private val key: ViewModelKey, value: T) : MutableSt
     override val replayCache: List<T>
         get() = mutableStateFlow.replayCache.map { value }
 
-    override suspend fun collect(collector: FlowCollector<T>): Nothing =
-        mutableStateFlow.collect { collector.emit(it.getValue(key)) }
+    override suspend fun collect(collector: FlowCollector<T>): Nothing = mutableStateFlow.collect {
+        collector.emit(it.getValue(key))
+    }
 }
