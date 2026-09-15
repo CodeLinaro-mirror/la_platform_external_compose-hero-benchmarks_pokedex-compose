@@ -20,20 +20,19 @@ import com.skydoves.pokedex.compose.core.database.entitiy.PokemonEntity
 import com.skydoves.pokedex.compose.core.model.Pokemon
 import com.skydoves.pokedex.compose.core.model.PokemonNetworkModel
 import com.skydoves.pokedex.compose.core.network.di.ModuleLocator
+import java.io.File
 import okhttp3.HttpUrl
 
 fun List<PokemonNetworkModel>.asDatabaseEntity(): List<PokemonEntity> = map { pokemon ->
     PokemonEntity(name = pokemon.name)
 }
 
-fun List<PokemonEntity>.asPresentationModel(apiUrl: HttpUrl, page: Int = 0): List<Pokemon> =
-    map { entity ->
-        Pokemon(
-            name = entity.name.replaceFirstChar { it.uppercase() },
-            imageUrl = getPokemonImageUrlByName(name = entity.name, apiUrl = apiUrl).toString(),
-            page = page,
-        )
-    }
+fun List<PokemonEntity>.asPresentationModel(apiUrl: HttpUrl): List<Pokemon> = map { entity ->
+    Pokemon(
+        name = entity.name.replaceFirstChar { it.uppercase() },
+        imageUrl = getPokemonImageUrlByName(name = entity.name, apiUrl = apiUrl).toString(),
+    )
+}
 
 fun getPokemonImageUrlByName(name: String, apiUrl: HttpUrl? = null): HttpUrl {
     val baseApiUrl = apiUrl ?: ModuleLocator.networkModule.baseUrl
@@ -44,3 +43,5 @@ fun getPokemonImageUrlByName(name: String, apiUrl: HttpUrl? = null): HttpUrl {
         .addPathSegment("image")
         .build()
 }
+
+fun getPokemonImageFileByName(name: String, filesDir: String): File = File(filesDir, "${name}.png")

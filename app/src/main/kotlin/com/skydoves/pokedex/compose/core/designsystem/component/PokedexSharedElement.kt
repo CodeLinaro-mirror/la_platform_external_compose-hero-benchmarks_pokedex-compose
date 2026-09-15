@@ -52,8 +52,8 @@ fun Modifier.pokedexSharedElement(
     state: SharedTransitionScope.SharedContentState,
     animatedVisibilityScope: AnimatedVisibilityScope,
     boundsTransform: BoundsTransform = DefaultBoundsTransform,
-    placeHolderSize: SharedTransitionScope.PlaceHolderSize =
-        SharedTransitionScope.PlaceHolderSize.contentSize,
+    placeholderSize: SharedTransitionScope.PlaceholderSize =
+        SharedTransitionScope.PlaceholderSize.ContentSize,
     renderInOverlayDuringTransition: Boolean = true,
     zIndexInOverlay: Float = 0f,
     clipInOverlayDuringTransition: SharedTransitionScope.OverlayClip = ParentClip,
@@ -66,7 +66,7 @@ fun Modifier.pokedexSharedElement(
                 sharedContentState = state,
                 animatedVisibilityScope = animatedVisibilityScope,
                 boundsTransform = boundsTransform,
-                placeHolderSize = placeHolderSize,
+                placeholderSize = placeholderSize,
                 renderInOverlayDuringTransition = renderInOverlayDuringTransition,
                 zIndexInOverlay = zIndexInOverlay,
                 clipInOverlayDuringTransition = clipInOverlayDuringTransition,
