@@ -61,7 +61,7 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.9.2")
 
     // AndroidX
-    implementation(libs.androidx.core)
+    implementation("androidx.core:core:1.17.0")
     // navigation3-runtime is exported as api because PokedexScreen implements NavKey
     api(project(":navigation3:navigation3-runtime"))
     implementation(project(":navigation3:navigation3-ui"))
