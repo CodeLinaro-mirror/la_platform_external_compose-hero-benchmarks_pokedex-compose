@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -43,10 +44,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.skydoves.pokedex.compose.core.designsystem.theme.PokedexTheme
+import com.skydoves.pokedex.compose.core.designsystem.utils.TraceAsync
 import com.skydoves.pokedex.compose.core.designsystem.utils.pxToDp
 
 @Suppress("ConfigurationScreenWidthHeight")
@@ -88,12 +91,18 @@ fun PokedexProgressBar(
                 mutableStateOf(progressWidth > (textWidth + threshold * 2))
             }
 
+        var animationRunning by remember { mutableStateOf(true) }
+        if (animationRunning) {
+            TraceAsync("PokedexProgressBar Animation (label = $label)")
+        }
+        Box(Modifier.size(1.dp).testTag("progress-animation-active-$animationRunning"))
         val animation: Float by
             animateFloatAsState(
                 targetValue = if (progressWidth == 0f) 0f else 1f,
                 // Configure the animation duration and easing.
                 animationSpec = tween(durationMillis = 950, easing = LinearOutSlowInEasing),
                 label = "",
+                finishedListener = { animationRunning = false },
             )
 
         Box(

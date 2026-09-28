@@ -17,6 +17,11 @@
 package com.skydoves.pokedex.compose.core.navigation
 
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.ui.geometry.Rect
 
-val boundsTransform = { _: Rect, _: Rect -> tween<Rect>(550) }
+val navigationEnterTransition = fadeIn(tween(PokedexTransitionDurationMs))
+val navigationExitTransition = fadeOut(tween(PokedexTransitionDurationMs))
+val boundsTransform = { _: Rect, _: Rect -> tween<Rect>(PokedexTransitionDurationMs) }
+const val PokedexTransitionDurationMs = 700
