@@ -76,7 +76,6 @@ import com.bumptech.glide.integration.compose.placeholder
 import com.skydoves.pokedex.compose.R
 import com.skydoves.pokedex.compose.core.PokedexFeatureFlags
 import com.skydoves.pokedex.compose.core.data.repository.home.FakeHomeRepository
-import com.skydoves.pokedex.compose.core.database.entitiy.mapper.getPokemonImageUrlByName
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexAppBar
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexCircularProgress
 import com.skydoves.pokedex.compose.core.designsystem.component.pokedexSharedElement
@@ -269,7 +268,7 @@ private fun PokemonCard(
 @Composable
 @OptIn(ExperimentalGlideComposeApi::class)
 private fun PokemonCardImage(pokemon: Pokemon, modifier: Modifier = Modifier) {
-    val imageModel = getPokemonImageUrlByName(pokemon.name).toString()
+    val imageModel = pokemon.imageUrl
     if (PokedexFeatureFlags.UseCoil) {
         AsyncImage(
             modifier = modifier,
