@@ -140,8 +140,14 @@ private fun HomeContent(
     Box(modifier = Modifier.fillMaxSize()) {
         val gridState = rememberLazyGridState()
         LaunchedEffect(gridState, pokemonList) {
+            // Fetch the next page when the last visible item index plus the visible item count
+            // reaches paginationThreshold. This matches RecyclerViewPaginator in pokedex-views.
             val paginationThreshold = pokemonList.size - PaginationBufferSize
-            snapshotFlow { gridState.firstVisibleItemIndex >= paginationThreshold }
+            snapshotFlow {
+                val visibleItems = gridState.layoutInfo.visibleItemsInfo
+                visibleItems.isNotEmpty() &&
+                    (visibleItems.size + visibleItems.last().index) >= paginationThreshold
+            }
                 .collect { shouldFetchNewItems ->
                     if (shouldFetchNewItems) {
                         fetchNextPokemonList()
