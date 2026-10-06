@@ -24,7 +24,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Box
@@ -71,14 +70,12 @@ import androidx.palette.graphics.Palette
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.bumptech.glide.integration.compose.CrossFade
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.placeholder
 import com.skydoves.pokedex.compose.R
 import com.skydoves.pokedex.compose.core.PokedexFeatureFlags
 import com.skydoves.pokedex.compose.core.data.repository.home.FakeHomeRepository
-import com.skydoves.pokedex.compose.core.database.entitiy.mapper.getPokemonImageUrlByName
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexAppBar
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexCircularProgress
 import com.skydoves.pokedex.compose.core.designsystem.component.pokedexSharedElement
@@ -271,7 +268,7 @@ private fun PokemonCard(
 @Composable
 @OptIn(ExperimentalGlideComposeApi::class)
 private fun PokemonCardImage(pokemon: Pokemon, modifier: Modifier = Modifier) {
-    val imageModel = getPokemonImageUrlByName(pokemon.name).toString()
+    val imageModel = pokemon.imageUrl
     if (PokedexFeatureFlags.UseCoil) {
         AsyncImage(
             modifier = modifier,
@@ -290,8 +287,8 @@ private fun PokemonCardImage(pokemon: Pokemon, modifier: Modifier = Modifier) {
             contentDescription = pokemon.name,
             model = imageModel,
             contentScale = ContentScale.Inside,
-            transition = CrossFade(tween(PokemonCardImageCrossfadeDurationMillis)),
-            loading = placeholder(painterResource(id = R.drawable.pokemon_preview)),
+            loading = placeholder(R.drawable.pokemon_preview),
+            failure = placeholder(R.drawable.pokemon_preview),
         )
     }
 }

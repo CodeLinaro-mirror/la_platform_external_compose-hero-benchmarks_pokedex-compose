@@ -17,7 +17,6 @@
 package com.skydoves.pokedex.compose.ui
 
 import androidx.activity.ComponentActivity
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.text.LocalBackgroundTextMeasurementExecutor
 import androidx.compose.runtime.Composable
@@ -64,7 +63,9 @@ fun PokedexMain(startDestination: PokedexScreen) {
         CompositionLocalProvider(*values) {
             val context = LocalContext.current
             DisposableEffect(context) {
-                (context as? ComponentActivity)?.enableEdgeToEdge()
+                (context as? ComponentActivity)?.window?.let {
+                    androidx.core.view.WindowCompat.enableEdgeToEdge(it)
+                }
                 onDispose { ModuleLocator.detach() }
             }
             trace("ModuleLocator.attach") { ModuleLocator.attach(context = { context }) }
