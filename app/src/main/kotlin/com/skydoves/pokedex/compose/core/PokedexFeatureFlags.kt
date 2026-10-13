@@ -65,4 +65,10 @@ object PokedexFeatureFlags {
 
     /** Whether to enable the scrollbar modifier on the list. */
     var EnableScrollbar = true
+
+    /**
+     * Enables tracking active grid item compositions via the `pokedex:grid:items:active` trace
+     * counter.
+     */
+    var TrackActiveGridItems: Boolean = true
 }

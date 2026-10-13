@@ -217,9 +217,11 @@ private fun PokemonCard(
 
     Card(
         modifier =
-            Modifier.padding(6.dp).fillMaxWidth().testTag("${pokemon.name}_card").clickable {
-                composeNavigator.navigate(PokedexScreen.Details(pokemon = pokemon))
-            },
+            Modifier.trackActiveGridItem(pokemon.name)
+                .padding(6.dp)
+                .fillMaxWidth()
+                .testTag("${pokemon.name}_card")
+                .clickable { composeNavigator.navigate(PokedexScreen.Details(pokemon = pokemon)) },
         shape = RoundedCornerShape(14.dp),
         colors =
             CardDefaults.cardColors(
