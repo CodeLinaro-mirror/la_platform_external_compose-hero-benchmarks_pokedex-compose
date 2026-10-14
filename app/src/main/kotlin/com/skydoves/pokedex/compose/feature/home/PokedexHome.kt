@@ -29,8 +29,11 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -132,16 +135,25 @@ private fun HomeContent(
     pokemonList: ImmutableList<Pokemon>,
     fetchNextPokemonList: () -> Unit,
 ) {
-    if (sharedTransitionScope != null) {
-        val statusText =
-            "pokedex-home-transition-active-${sharedTransitionScope.isTransitionActive}"
-        Text(statusText, Modifier.semantics { testTag = statusText })
-    }
     Box(modifier = Modifier.fillMaxSize()) {
+        if (sharedTransitionScope != null) {
+            val statusText =
+                "pokedex-home-transition-active-${sharedTransitionScope.isTransitionActive}"
+            Text(
+                statusText,
+                Modifier.align(Alignment.TopCenter).semantics { testTag = statusText },
+            )
+        }
         val gridState = rememberLazyGridState()
         LaunchedEffect(gridState, pokemonList) {
+            // Fetch the next page when the last visible item index plus the visible item count
+            // reaches paginationThreshold. This matches RecyclerViewPaginator in pokedex-views.
             val paginationThreshold = pokemonList.size - PaginationBufferSize
-            snapshotFlow { gridState.firstVisibleItemIndex >= paginationThreshold }
+            snapshotFlow {
+                val visibleItems = gridState.layoutInfo.visibleItemsInfo
+                visibleItems.isNotEmpty() &&
+                    (visibleItems.size + visibleItems.last().index) >= paginationThreshold
+            }
                 .collect { shouldFetchNewItems ->
                     if (shouldFetchNewItems) {
                         fetchNextPokemonList()
@@ -162,11 +174,20 @@ private fun HomeContent(
 
         ReportDrawnWhen { pokemonList.isNotEmpty() }
 
+        val navBarBottomPadding =
+            WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
         LazyVerticalGrid(
             state = gridState,
-            modifier = Modifier.testTag("PokedexList").then(scrollbarModifier),
+            modifier = Modifier.fillMaxSize().testTag("PokedexList").then(scrollbarModifier),
             columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(6.dp),
+            contentPadding =
+                PaddingValues(
+                    start = 6.dp,
+                    top = 6.dp,
+                    end = 6.dp,
+                    bottom = navBarBottomPadding,
+                ),
         ) {
             items(items = pokemonList, key = { pokemon -> pokemon.name }) { pokemon ->
                 PokemonCard(
