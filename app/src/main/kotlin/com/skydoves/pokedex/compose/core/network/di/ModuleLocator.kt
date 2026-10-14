@@ -34,16 +34,11 @@ object ModuleLocator {
 
     val serializationModule by lazy { SerializationModule() }
     val dispatchersModule by lazy { DispatchersModule() }
-    val networkModule by lazy {
-        NetworkModule(
-            json = serializationModule.json,
-            networkCoroutineContext = dispatchersModule.io
-        )
-    }
+    val networkModule by lazy { NetworkModule(json = serializationModule.json) }
     val databaseModule by lazy {
         DatabaseModule(
             context = requireNotNull(context) { "Please attach the context using attach" },
-            json = serializationModule.json
+            json = serializationModule.json,
         )
     }
     val repositoryModule by lazy {
@@ -52,7 +47,7 @@ object ModuleLocator {
             databaseModule.pokemonDao,
             databaseModule.pokemonInfoDao,
             dispatchersModule.io,
-            networkModule.baseUrl
+            networkModule.baseUrl,
         )
     }
 }
