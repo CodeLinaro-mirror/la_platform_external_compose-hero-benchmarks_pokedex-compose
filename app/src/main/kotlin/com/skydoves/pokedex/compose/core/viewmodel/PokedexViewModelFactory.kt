@@ -16,22 +16,14 @@
 
 package com.skydoves.pokedex.compose.core.viewmodel
 
-import androidx.compose.runtime.compositionLocalWithComputedDefaultOf
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.skydoves.pokedex.compose.core.di.RepositoryModule
-import com.skydoves.pokedex.compose.core.network.di.ModuleLocator
 import com.skydoves.pokedex.compose.feature.details.DetailsViewModel
 import com.skydoves.pokedex.compose.feature.home.HomeViewModel
 
-val LocalPokedexViewModelFactory = compositionLocalWithComputedDefaultOf {
-    ModuleLocator.attach(context = { LocalContext.currentValue })
-    PokedexViewModelFactory(ModuleLocator.repositoryModule)
-}
-
-fun PokedexViewModelFactory(repositoryModule: RepositoryModule) = viewModelFactory {
+fun pokedexViewModelFactory(repositoryModule: RepositoryModule) = viewModelFactory {
     initializer { DetailsViewModel(repositoryModule.detailsRepository, createSavedStateHandle()) }
     initializer { HomeViewModel(repositoryModule.homeRepository) }
 }

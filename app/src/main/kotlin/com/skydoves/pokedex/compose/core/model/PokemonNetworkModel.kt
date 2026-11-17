@@ -20,30 +20,3 @@ import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
 
 @Immutable @Serializable class PokemonNetworkModel(val name: String)
-
-fun fakePokemonNetworkModels() = FakeRandomizedNames.map { name -> PokemonNetworkModel(name) }
-
-val FakePokemonNames =
-    listOf(
-        "Jason",
-        "Jack",
-        "Anna",
-        "Bubir",
-        "Xanto",
-        "Vistesia",
-        "Ulint-y",
-        "Lapesareba",
-        "Nemo",
-        "Masurap"
-    )
-val FakeRandomizedNames by lazy {
-    FakePokemonNames.flatMap { name ->
-        val nameChars = name.toCharArray()
-        val shuffledChars = nameChars.apply { shuffle() }
-        listOf(
-            shuffledChars.joinToString(""),
-            shuffledChars.apply { reverse() }.joinToString(""),
-            nameChars.apply { reverse() }.joinToString("")
-        )
-    }
-}
