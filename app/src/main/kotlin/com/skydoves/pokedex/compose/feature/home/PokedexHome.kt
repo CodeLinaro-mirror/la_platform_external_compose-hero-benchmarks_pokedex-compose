@@ -19,17 +19,21 @@
 package com.skydoves.pokedex.compose.feature.home
 
 import android.content.res.Configuration
+import androidx.activity.compose.ReportDrawnWhen
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -40,11 +44,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.nonInteractiveScrollbar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,21 +66,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.palette.graphics.Palette
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.bumptech.glide.integration.compose.CrossFade
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.placeholder
 import com.skydoves.pokedex.compose.R
 import com.skydoves.pokedex.compose.core.PokedexFeatureFlags
 import com.skydoves.pokedex.compose.core.data.repository.home.FakeHomeRepository
-import com.skydoves.pokedex.compose.core.database.entitiy.mapper.getPokemonImageFileByName
-import com.skydoves.pokedex.compose.core.database.entitiy.mapper.getPokemonImageUrlByName
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexAppBar
 import com.skydoves.pokedex.compose.core.designsystem.component.PokedexCircularProgress
 import com.skydoves.pokedex.compose.core.designsystem.component.pokedexSharedElement
@@ -87,6 +91,8 @@ import com.skydoves.pokedex.compose.core.preview.PokedexPreviewTheme
 import com.skydoves.pokedex.compose.core.preview.PreviewUtils
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 @Composable
 fun PokedexHome(
@@ -95,7 +101,18 @@ fun PokedexHome(
     homeViewModel: HomeViewModel,
 ) {
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
-    val pokemonList by homeViewModel.pokemonList.collectAsStateWithLifecycle()
+    val pokemonList by
+        if (PokedexFeatureFlags.UseLifecycleEffectForDataLoadingOnStartup) {
+            val scope = rememberCoroutineScope()
+            val pokemonList = remember { mutableStateOf(emptyList<Pokemon>()) }
+            LifecycleStartEffect(scope) {
+                scope.launch { homeViewModel.pokemonList.collect { pokemonList.value = it } }
+                onStopOrDispose { scope.cancel() }
+            }
+            pokemonList
+        } else {
+            homeViewModel.pokemonList.collectAsStateWithLifecycle()
+        }
 
     Column(modifier = Modifier.fillMaxSize()) {
         PokedexAppBar()
@@ -118,40 +135,65 @@ private fun HomeContent(
     pokemonList: ImmutableList<Pokemon>,
     fetchNextPokemonList: () -> Unit,
 ) {
-    if (sharedTransitionScope != null) {
-        val statusText =
-            "pokedex-home-transition-active-${sharedTransitionScope.isTransitionActive}"
-        Text(statusText, Modifier.semantics { testTag = statusText })
-    }
     Box(modifier = Modifier.fillMaxSize()) {
+        if (sharedTransitionScope != null) {
+            val statusText =
+                "pokedex-home-transition-active-${sharedTransitionScope.isTransitionActive}"
+            Text(
+                statusText,
+                Modifier.align(Alignment.TopCenter).semantics { testTag = statusText },
+            )
+        }
         val gridState = rememberLazyGridState()
         LaunchedEffect(gridState, pokemonList) {
+            // Fetch the next page when the last visible item index plus the visible item count
+            // reaches paginationThreshold. This matches RecyclerViewPaginator in pokedex-views.
             val paginationThreshold = pokemonList.size - PaginationBufferSize
-            snapshotFlow { gridState.firstVisibleItemIndex >= paginationThreshold }
+            snapshotFlow {
+                val visibleItems = gridState.layoutInfo.visibleItemsInfo
+                visibleItems.isNotEmpty() &&
+                    (visibleItems.size + visibleItems.last().index) >= paginationThreshold
+            }
                 .collect { shouldFetchNewItems ->
                     if (shouldFetchNewItems) {
                         fetchNextPokemonList()
                     }
                 }
         }
-        // This read is hoisted to avoid reading it in every composable. It's prudent to assume
-        // that this is not an optimization applied by default in most codebases.
-        val filesDir =
-            if (PokedexFeatureFlags.FetchPokemonImagesFromDisk) {
-                LocalContext.current.filesDir.absolutePath
-            } else ""
+
+        val scrollIndicatorState = gridState.scrollIndicatorState
+        val scrollbarModifier =
+            if (PokedexFeatureFlags.EnableScrollbar && scrollIndicatorState != null) {
+                Modifier.nonInteractiveScrollbar(
+                    state = scrollIndicatorState,
+                    orientation = Orientation.Vertical,
+                )
+            } else {
+                Modifier
+            }
+
+        ReportDrawnWhen { pokemonList.isNotEmpty() }
+
+        val navBarBottomPadding =
+            WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
         LazyVerticalGrid(
             state = gridState,
-            modifier = Modifier.testTag("PokedexList"),
+            modifier = Modifier.fillMaxSize().testTag("PokedexList").then(scrollbarModifier),
             columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(6.dp),
+            contentPadding =
+                PaddingValues(
+                    start = 6.dp,
+                    top = 6.dp,
+                    end = 6.dp,
+                    bottom = navBarBottomPadding,
+                ),
         ) {
             items(items = pokemonList, key = { pokemon -> pokemon.name }) { pokemon ->
                 PokemonCard(
                     animatedVisibilityScope = animatedVisibilityScope,
                     sharedTransitionScope = sharedTransitionScope,
                     pokemon = pokemon,
-                    filesDir = filesDir,
                 )
             }
         }
@@ -168,7 +210,6 @@ private fun PokemonCard(
     sharedTransitionScope: SharedTransitionScope?,
     animatedVisibilityScope: AnimatedVisibilityScope,
     pokemon: Pokemon,
-    filesDir: String,
 ) {
     val composeNavigator = currentComposeNavigator
     val palette by remember { mutableStateOf<Palette?>(null) }
@@ -176,9 +217,11 @@ private fun PokemonCard(
 
     Card(
         modifier =
-            Modifier.padding(6.dp).fillMaxWidth().testTag("${pokemon.name}_card").clickable {
-                composeNavigator.navigate(PokedexScreen.Details(pokemon = pokemon))
-            },
+            Modifier.trackActiveGridItem(pokemon.name)
+                .padding(6.dp)
+                .fillMaxWidth()
+                .testTag("${pokemon.name}_card")
+                .clickable { composeNavigator.navigate(PokedexScreen.Details(pokemon = pokemon)) },
         shape = RoundedCornerShape(14.dp),
         colors =
             CardDefaults.cardColors(
@@ -212,7 +255,6 @@ private fun PokemonCard(
                         } else Modifier
                     ),
             pokemon = pokemon,
-            filesDir = filesDir,
         )
 
         Text(
@@ -248,16 +290,8 @@ private fun PokemonCard(
 
 @Composable
 @OptIn(ExperimentalGlideComposeApi::class)
-private fun PokemonCardImage(pokemon: Pokemon, filesDir: String, modifier: Modifier = Modifier) {
-    val imageModel =
-        when (PokedexFeatureFlags.FetchPokemonImagesFromDisk) {
-            true -> {
-                remember(pokemon.name, filesDir) {
-                    getPokemonImageFileByName(pokemon.name, filesDir)
-                }
-            }
-            false -> getPokemonImageUrlByName(pokemon.name).toString()
-        }
+private fun PokemonCardImage(pokemon: Pokemon, modifier: Modifier = Modifier) {
+    val imageModel = pokemon.imageUrl
     if (PokedexFeatureFlags.UseCoil) {
         AsyncImage(
             modifier = modifier,
@@ -276,8 +310,8 @@ private fun PokemonCardImage(pokemon: Pokemon, filesDir: String, modifier: Modif
             contentDescription = pokemon.name,
             model = imageModel,
             contentScale = ContentScale.Inside,
-            transition = CrossFade(tween(PokemonCardImageCrossfadeDurationMillis)),
-            loading = placeholder(painterResource(id = R.drawable.pokemon_preview)),
+            loading = placeholder(R.drawable.pokemon_preview),
+            failure = placeholder(R.drawable.pokemon_preview),
         )
     }
 }
