@@ -23,9 +23,9 @@ import androidx.activity.compose.ReportDrawnWhen
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,6 +41,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.nonInteractiveScrollbar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -68,7 +69,6 @@ import androidx.palette.graphics.Palette
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.bumptech.glide.integration.compose.CrossFade
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.placeholder
@@ -97,12 +97,26 @@ fun PokedexDetails(
     val uiState by detailsViewModel.uiState.collectAsStateWithLifecycle()
     val pokemonName by detailsViewModel.pokemonName.collectAsStateWithLifecycle()
     val pokemonInfo by detailsViewModel.pokemonInfo.collectAsStateWithLifecycle()
+    val scrollState = rememberScrollState()
+    val scrollIndicatorState = scrollState.scrollIndicatorState
+    val scrollbarModifier =
+        if (PokedexFeatureFlags.EnableScrollbar && scrollIndicatorState != null) {
+            Modifier.nonInteractiveScrollbar(
+                state = scrollIndicatorState,
+                orientation = Orientation.Vertical,
+            )
+        } else {
+            Modifier
+        }
 
     ReportDrawnWhen { uiState == DetailsUiState.Idle && pokemonInfo != null }
 
     Column(
         modifier =
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("PokedexDetails")
+            Modifier.fillMaxSize()
+                .then(scrollbarModifier)
+                .verticalScroll(scrollState)
+                .testTag("PokedexDetails")
     ) {
         DetailsHeader(
             sharedTransitionScope = sharedTransitionScope,
@@ -263,9 +277,9 @@ private fun PokemonHeaderImage(pokemonName: String?, modifier: Modifier) {
             modifier = modifier,
             model = imageModel,
             contentScale = ContentScale.Inside,
-            transition = CrossFade(tween(PokemonHeaderImageCrossfadeDurationMillis)),
             contentDescription = pokemonName,
-            loading = placeholder(painterResource(id = R.drawable.pokemon_preview)),
+            loading = placeholder(R.drawable.pokemon_preview),
+            failure = placeholder(R.drawable.pokemon_preview),
         )
     }
 }
