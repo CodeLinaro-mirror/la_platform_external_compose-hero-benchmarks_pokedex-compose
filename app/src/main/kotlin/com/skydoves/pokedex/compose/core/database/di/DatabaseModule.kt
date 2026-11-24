@@ -25,7 +25,7 @@ import com.skydoves.pokedex.compose.core.database.StatsResponseConverter
 import com.skydoves.pokedex.compose.core.database.TypeResponseConverter
 import kotlinx.serialization.json.Json
 
-class DatabaseModule(private val context: Context, private val json: Json) {
+class DatabaseModule(private val context: () -> Context, private val json: Json) {
     val typeResponseConverter: TypeResponseConverter by lazy { TypeResponseConverter(json) }
 
     val statsResponseConverter: StatsResponseConverter by lazy { StatsResponseConverter(json) }
@@ -34,7 +34,7 @@ class DatabaseModule(private val context: Context, private val json: Json) {
         // fallbackToDestructiveMigration requires a parameter in Room 2.7 that's not available in
         //  2.6. Forward-compatibility checks like androidx_max_dep_versions will fail without this.
         @Suppress("DEPRECATION")
-        Room.databaseBuilder(context, PokedexDatabase::class.java, "Pokedex.db")
+        Room.databaseBuilder(context(), PokedexDatabase::class.java, "Pokedex.db")
             .fallbackToDestructiveMigration()
             .addTypeConverter(typeResponseConverter)
             .addTypeConverter(statsResponseConverter)

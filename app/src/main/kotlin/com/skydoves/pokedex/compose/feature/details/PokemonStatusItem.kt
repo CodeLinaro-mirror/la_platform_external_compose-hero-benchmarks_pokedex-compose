@@ -31,14 +31,8 @@ import com.skydoves.pokedex.compose.core.designsystem.component.PokedexProgressB
 import com.skydoves.pokedex.compose.core.designsystem.theme.PokedexTheme
 
 @Composable
-internal fun PokemonStatusItem(
-    modifier: Modifier = Modifier,
-    pokedexStatus: PokedexStatus,
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.SpaceEvenly,
-    ) {
+internal fun PokemonStatusItem(modifier: Modifier = Modifier, pokedexStatus: PokedexStatus) {
+    Row(modifier = modifier, horizontalArrangement = Arrangement.SpaceEvenly) {
         Text(
             modifier = Modifier.padding(start = 32.dp).widthIn(min = 20.dp),
             text = pokedexStatus.type,

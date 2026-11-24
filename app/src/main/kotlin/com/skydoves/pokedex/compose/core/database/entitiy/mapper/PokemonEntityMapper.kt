@@ -18,34 +18,30 @@ package com.skydoves.pokedex.compose.core.database.entitiy.mapper
 
 import com.skydoves.pokedex.compose.core.database.entitiy.PokemonEntity
 import com.skydoves.pokedex.compose.core.model.Pokemon
+import com.skydoves.pokedex.compose.core.model.PokemonNetworkModel
+import com.skydoves.pokedex.compose.core.network.di.ModuleLocator
+import java.io.File
+import okhttp3.HttpUrl
 
-object PokemonEntityMapper : EntityMapper<List<Pokemon>, List<PokemonEntity>> {
-
-    override fun asEntity(domain: List<Pokemon>): List<PokemonEntity> {
-        return domain.map { pokemon ->
-            PokemonEntity(
-                page = pokemon.page,
-                name = pokemon.name,
-                url = pokemon.url,
-            )
-        }
-    }
-
-    override fun asDomain(entity: List<PokemonEntity>): List<Pokemon> {
-        return entity.map { pokemonEntity ->
-            Pokemon(
-                page = pokemonEntity.page,
-                nameField = pokemonEntity.name,
-                url = pokemonEntity.url,
-            )
-        }
-    }
+fun List<PokemonNetworkModel>.asDatabaseEntity(): List<PokemonEntity> = map { pokemon ->
+    PokemonEntity(name = pokemon.name)
 }
 
-fun List<Pokemon>.asEntity(): List<PokemonEntity> {
-    return PokemonEntityMapper.asEntity(this)
+fun List<PokemonEntity>.asPresentationModel(apiUrl: HttpUrl): List<Pokemon> = map { entity ->
+    Pokemon(
+        name = entity.name.replaceFirstChar { it.uppercase() },
+        imageUrl = getPokemonImageUrlByName(name = entity.name, apiUrl = apiUrl).toString(),
+    )
 }
 
-fun List<PokemonEntity>?.asDomain(): List<Pokemon> {
-    return PokemonEntityMapper.asDomain(this.orEmpty())
+fun getPokemonImageUrlByName(name: String, apiUrl: HttpUrl? = null): HttpUrl {
+    val baseApiUrl = apiUrl ?: ModuleLocator.networkModule.baseUrl
+    return baseApiUrl
+        .newBuilder()
+        .addPathSegment("pokemon")
+        .addPathSegment(name)
+        .addPathSegment("image")
+        .build()
 }
+
+fun getPokemonImageFileByName(name: String, filesDir: String): File = File(filesDir, "${name}.png")
